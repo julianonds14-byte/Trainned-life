@@ -617,7 +617,7 @@
   <script>
     const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 70;
 
-    // DEFINIÇÃO DOS 3 CÓDIGOS OFICIAIS
+    // CÓDIGOS OFICIAIS VIP
     const VIP_CODES = {
       "VIPTEST10": 1 * 60 * 1000,                  // 1 Minuto
       "VIPMENSAL3030": 30 * 24 * 60 * 60 * 1000,   // 30 Dias
@@ -722,7 +722,49 @@
       }
     }
 
-    // Monitora a expiração do VIP em tempo real
+    // INJETA OS ATRIBUTOS E TAREFAS EXTRAS DO PACOTE VIP
+    function injectVipPreset() {
+      // 1. Injeta os Atributos: Carisma, Disciplina e Foco (se ainda não existirem)
+      const vipStats = [
+        { key: 'carisma', name: 'Carisma', color: '#a855f7' },
+        { key: 'disciplina', name: 'Disciplina', color: '#ef4444' },
+        { key: 'foco', name: 'Foco', color: '#eab308' }
+      ];
+
+      vipStats.forEach(st => {
+        if (!appData.stats[st.key]) {
+          appData.stats[st.key] = {
+            name: st.name,
+            level: 1,
+            xp: 0,
+            color: st.color
+          };
+        }
+      });
+
+      // 2. Injeta os Hábitos da imagem
+      const vipTasks = [
+        { title: '💧 Beber 3L de Água', stat: 'saude', xpReward: 15 },
+        { title: '🗣️ Treinar Oratória / Socializar', stat: 'carisma', xpReward: 20 },
+        { title: '🎯 Cumprir Rotina sem Procrastinar', stat: 'disciplina', xpReward: 30 },
+        { title: '🥶 Tomar banho gelado', stat: 'disciplina', xpReward: 20 }
+      ];
+
+      vipTasks.forEach(vt => {
+        const alreadyExists = appData.tasks.some(t => t.title.toLowerCase() === vt.title.toLowerCase());
+        if (!alreadyExists) {
+          appData.tasks.push({
+            id: Date.now() + Math.random(),
+            title: vt.title,
+            stat: vt.stat,
+            xpReward: vt.xpReward,
+            completed: false
+          });
+        }
+      });
+    }
+
+    // MONITOR DE EXPIRAÇÃO VIP
     function checkVipTimer() {
       if (!appData.isVip || !appData.vipExpiresAt) return;
 
@@ -743,10 +785,8 @@
           const totalSecs = Math.ceil(timeLeftMs / 1000);
           
           if (totalSecs <= 120) {
-            // Exibe em segundos se faltar menos de 2 minutos
             vipBtn.innerText = `👑 VIP (${totalSecs}s)`;
           } else {
-            // Exibe em Dias / Horas se for um tempo maior
             const days = Math.floor(totalSecs / (24 * 3600));
             const hours = Math.floor((totalSecs % (24 * 3600)) / 3600);
             if (days > 0) {
@@ -787,19 +827,24 @@
         
         appData.isVip = true;
         appData.vipExpiresAt = Date.now() + durationMs;
+        
+        // Ativação automática dos atributos e tarefas VIP
+        injectVipPreset();
+
         saveData();
         playSound('levelup');
 
         if (cleanCode === 'VIPTEST10') {
-          alert("🎉 VIP de Teste ativado por 1 MINUTO!");
+          alert("🎉 VIP de Teste ativado por 1 MINUTO! Atributos e Hábitos adicionados.");
         } else if (cleanCode === 'VIPMENSAL3030') {
-          alert("🎉 VIP Mensal ativado por 30 DIAS!");
+          alert("🎉 VIP Mensal ativado por 30 DIAS! Atributos e Hábitos adicionados.");
         } else if (cleanCode === 'VIPANUAL365DIAS10') {
-          alert("🎉 VIP Anual ativado por 365 DIAS!");
+          alert("🎉 VIP Anual ativado por 365 DIAS! Atributos e Hábitos adicionados.");
         }
 
         updateVipUI();
         renderStats();
+        renderStatSelectOptions();
         renderTasks();
       } else {
         alert("❌ Código inválido!");
