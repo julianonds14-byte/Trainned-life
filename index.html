@@ -106,7 +106,7 @@
     .stat-row {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 6px;
     }
 
     .stat-header {
@@ -123,20 +123,21 @@
       gap: 8px;
     }
 
-    .delete-stat-icon {
-      background: none;
-      border: none;
-      color: var(--text-dim);
-      font-size: 0.85rem;
+    /* BOTÃO EXCLUIR ATRIBUTO DESTACADO */
+    .btn-delete-attribute {
+      background-color: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: var(--accent-red);
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 6px;
       cursor: pointer;
-      padding: 2px 4px;
-      border-radius: 4px;
-      line-height: 1;
+      transition: all 0.2s;
     }
 
-    .delete-stat-icon:hover {
-      color: var(--accent-red);
-      background-color: rgba(239, 68, 68, 0.1);
+    .btn-delete-attribute:hover {
+      background-color: var(--accent-red);
+      color: #fff;
     }
 
     .stat-bar-bg {
@@ -411,25 +412,25 @@
       color: var(--text-dim);
     }
 
-    /* MODAL DE SEGURANÇA PARA DELETAR ATRIBUTO */
+    /* MODAL DE CONFIRMAÇÃO DE SEGURANÇA (DELETE) */
     .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(4px);
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(5px);
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
+      z-index: 9999;
       padding: 16px;
     }
 
     .modal-card {
       background-color: var(--card-bg);
-      border: 1px solid var(--accent-red);
+      border: 2px solid var(--accent-red);
       border-radius: 16px;
       padding: 20px;
       max-width: 400px;
@@ -437,25 +438,19 @@
       display: flex;
       flex-direction: column;
       gap: 14px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
 
     .modal-title {
       font-size: 1.1rem;
       color: var(--accent-red);
       font-weight: bold;
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
 
     .modal-body {
       font-size: 0.85rem;
       color: var(--text-dim);
       line-height: 1.4;
-    }
-
-    .modal-body strong {
-      color: var(--text);
     }
 
     .modal-actions {
@@ -558,15 +553,15 @@
     <button style="background: var(--accent-yellow); color: #000;" onclick="promptVipCode()">Inserir Código de Ativação</button>
   </div>
 
-  <!-- MODAL DE EXCLUSÃO COMPLETA DE ATRIBUTO -->
+  <!-- MODAL DE CONFIRMAÇÃO PARA EXCLUIR ATRIBUTO -->
   <div class="modal-overlay" id="deleteStatModal">
     <div class="modal-card">
       <div class="modal-title">⚠️ Excluir Atributo</div>
       <div class="modal-body">
-        Esta ação é <strong style="color: var(--accent-red)">irreversível</strong>! Apagar o atributo <strong id="deleteStatNameTarget"></strong> também removerá todas as tarefas ligadas a ele.<br><br>
-        Digite a palavra <strong style="color: #fff">DELETE</strong> no campo abaixo para confirmar:
+        Esta ação apagará permanentemente o atributo <strong id="deleteStatNameTarget" style="color:#fff"></strong> e todas as tarefas ligadas a ele.<br><br>
+        Digite a palavra <strong style="color: var(--accent-red)">DELETE</strong> para confirmar:
       </div>
-      <input type="text" id="deleteConfirmInput" class="input-field" placeholder="Digite DELETE" oninput="validateDeleteInput()">
+      <input type="text" id="deleteConfirmInput" class="input-field" placeholder="Digite DELETE aqui" oninput="validateDeleteInput()">
       <div class="modal-actions">
         <button class="btn-secondary" onclick="closeDeleteModal()">Cancelar</button>
         <button id="confirmDeleteStatBtn" class="btn-danger" disabled onclick="executeDeleteStat()">Excluir</button>
@@ -578,7 +573,6 @@
     const GOAL_FINANCE = 30000;
     const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 70;
 
-    // CÓDIGOS VÁLIDOS PARA ATIVAÇÃO VIP
     const VALID_VIP_CODES = ["VIP2026", "LIFERPG-PREMIUM", "MEU-CODIGO-SECRET"];
 
     const FREE_STAT_LIMIT = 3;
@@ -699,12 +693,12 @@
         appData.isVip = true;
         saveData();
         playSound('levelup');
-        alert("🎉 PARABÉNS! Versão VIP Ativada com sucesso! Agora você tem recursos ilimitados.");
+        alert("🎉 PARABÉNS! Versão VIP Ativada com sucesso!");
         updateVipUI();
         renderStats();
         renderTasks();
       } else {
-        alert("❌ Código inválido. Verifique o código e tente novamente.");
+        alert("❌ Código inválido.");
       }
     }
 
@@ -783,7 +777,7 @@
             <div class="stat-header">
               <div class="stat-title-group">
                 <span>${stat.name} (Nível ${stat.level})</span>
-                <button class="delete-stat-icon" onclick="openDeleteModal('${key}')" title="Excluir Atributo">🗑️</button>
+                <button class="btn-delete-attribute" onclick="openDeleteModal('${key}')">Excluir</button>
               </div>
               <span>${stat.xp} / ${nextXp} XP</span>
             </div>
@@ -795,7 +789,7 @@
       }
     }
 
-    /* SISTEMA SEGURO DE DELETAR ATRIBUTO */
+    /* MODAL DE SEGURANÇA PARA DELETAR ATRIBUTO */
     function openDeleteModal(key) {
       statKeyToDelete = key;
       const stat = appData.stats[key];
@@ -826,10 +820,10 @@
     function executeDeleteStat() {
       if (!statKeyToDelete || !appData.stats[statKeyToDelete]) return;
 
-      // 1. Apaga o atributo
+      // Deleta o atributo
       delete appData.stats[statKeyToDelete];
 
-      // 2. Apaga todas as tarefas vinculadas a esse atributo
+      // Deleta as tarefas vinculadas a esse atributo
       appData.tasks = appData.tasks.filter(t => t.stat !== statKeyToDelete);
 
       saveData();
@@ -851,7 +845,7 @@
       const currentStatsCount = Object.keys(appData.stats).length;
 
       if (!appData.isVip && currentStatsCount >= FREE_STAT_LIMIT) {
-        alert("🔒 Limite de 3 atributos atingido no plano Grátis!\n\nAtive a chave VIP para criar atributos ilimitados.");
+        alert("🔒 Limite de 3 atributos atingido no plano Grátis!");
         promptVipCode();
         return;
       }
@@ -921,7 +915,7 @@
 
     function addNewTask() {
       if (!appData.isVip && appData.tasks.length >= FREE_TASK_LIMIT) {
-        alert("🔒 Limite de 5 tarefas atingido no plano Grátis!\n\nAtive a chave VIP para adicionar tarefas ilimitadas.");
+        alert("🔒 Limite de 5 tarefas atingido no plano Grátis!");
         promptVipCode();
         return;
       }
