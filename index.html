@@ -420,38 +420,64 @@
     const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 70;
 
     let soundEnabled = true;
+    let audioCtx = null;
 
-    // Sons diretos e compatíveis com telemóvel
-    const sounds = {
-      check: new Audio('https://assets.mixkit.co/active_storage/sfx/2578/2578-preview.mp3'),
-      levelup: new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'),
-      money: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3')
-    };
-
-    // Pré-carregar e desbloquear som ao primeiro toque do utilizador
-    function unlockAudio() {
-      if (soundEnabled) {
-        for (let key in sounds) {
-          sounds[key].play().then(() => {
-            sounds[key].pause();
-            sounds[key].currentTime = 0;
-          }).catch(() => {});
-        }
+    // Inicializa o motor de áudio no primeiro toque do utilizador
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
-      document.removeEventListener('touchstart', unlockAudio);
-      document.removeEventListener('click', unlockAudio);
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
     }
 
-    document.addEventListener('touchstart', unlockAudio, { once: true });
-    document.addEventListener('click', unlockAudio, { once: true });
+    document.addEventListener('touchstart', initAudio, { once: true });
+    document.addEventListener('click', initAudio, { once: true });
+
+    function playTone(freq, type, duration, delay = 0) {
+      if (!soundEnabled) return;
+      initAudio();
+      
+      setTimeout(() => {
+        try {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          
+          osc.type = type;
+          osc.frequency.value = freq;
+          
+          gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+          
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          
+          osc.start();
+          osc.stop(audioCtx.currentTime + duration);
+        } catch(e) {
+          console.log(e);
+        }
+      }, delay);
+    }
 
     function playSound(type) {
-      if (!soundEnabled || !sounds[type]) return;
-      try {
-        sounds[type].currentTime = 0;
-        sounds[type].play().catch(e => console.log("Audio block:", e));
-      } catch (e) {
-        console.log("Audio play error:", e);
+      if (!soundEnabled) return;
+      
+      if (type === 'check') {
+        // Efeito Blip 8-bit
+        playTone(523.25, 'sine', 0.08, 0);   // C5
+        playTone(659.25, 'sine', 0.12, 60);  // E5
+      } else if (type === 'levelup') {
+        // Fanfarra Nível Concluído
+        playTone(440, 'triangle', 0.1, 0);    // A4
+        playTone(554.37, 'triangle', 0.1, 80); // C#5
+        playTone(659.25, 'triangle', 0.1, 160); // E5
+        playTone(880, 'triangle', 0.25, 240);  // A5
+      } else if (type === 'money') {
+        // Som de moedas
+        playTone(987.77, 'square', 0.08, 0);  // B5
+        playTone(1318.51, 'square', 0.15, 70); // E6
       }
     }
 
