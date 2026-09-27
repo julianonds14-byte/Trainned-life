@@ -16,6 +16,7 @@
       --accent-purple: #a855f7;
       --accent-orange: #f97316;
       --accent-yellow: #eab308;
+      --accent-red: #ef4444;
     }
 
     * {
@@ -68,6 +69,7 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
+      margin-bottom: 12px;
     }
 
     .stat-row {
@@ -97,6 +99,44 @@
       transition: width 0.4s ease;
     }
 
+    /* FORMULÁRIOS DE CRIAÇÃO */
+    .add-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .input-field, select {
+      width: 100%;
+      background-color: var(--bg);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    input[type="color"] {
+      width: 44px;
+      height: 42px;
+      padding: 2px;
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
     /* TAREFAS DIÁRIAS */
     .tasks-list {
       display: flex;
@@ -112,12 +152,14 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      cursor: pointer;
       transition: all 0.2s;
     }
 
     .task-item.completed {
       opacity: 0.5;
+    }
+
+    .task-item.completed .task-title {
       text-decoration: line-through;
     }
 
@@ -125,6 +167,8 @@
       display: flex;
       align-items: center;
       gap: 12px;
+      flex: 1;
+      cursor: pointer;
     }
 
     .checkbox {
@@ -160,7 +204,21 @@
       color: var(--text-dim);
     }
 
-    /* PAINEL FINANCEIRO DA META */
+    .delete-btn {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .delete-btn:hover {
+      color: var(--accent-red);
+    }
+
+    /* PAINEL FINANCEIRO */
     .finance-card {
       background-color: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -231,17 +289,6 @@
       gap: 8px;
     }
 
-    input[type="number"] {
-      flex: 1;
-      background-color: var(--bg);
-      border: 1px solid var(--card-border);
-      color: var(--text);
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      outline: none;
-    }
-
     button {
       background-color: var(--accent-green);
       color: #000;
@@ -283,8 +330,28 @@
   <div class="section-title">⚡ Atributos & Níveis</div>
   <div class="stats-card" id="statsContainer"></div>
 
+  <!-- CRIAR NOVO ATRIBUTO -->
+  <div class="add-card">
+    <div class="form-row">
+      <input type="text" id="newStatName" class="input-field" placeholder="Novo Atributo (ex: Foco)">
+      <input type="color" id="newStatColor" value="#3b82f6" title="Escolha uma cor">
+      <button onclick="addNewStat()">+ Atributo</button>
+    </div>
+  </div>
+
   <!-- SEÇÃO DE TAREFAS DIÁRIAS -->
   <div class="section-title">✅ Hábitos Diários</div>
+
+  <!-- ADICIONAR NOVA TAREFA -->
+  <div class="add-card">
+    <input type="text" id="newTaskTitle" class="input-field" placeholder="Ex: Meditar 10 minutos">
+    <div class="form-row">
+      <select id="newTaskStat"></select>
+      <input type="number" id="newTaskXp" class="input-field" placeholder="XP" value="20" min="5" max="100" style="width: 80px;">
+      <button onclick="addNewTask()">+ Criar</button>
+    </div>
+  </div>
+
   <div class="tasks-list" id="tasksContainer"></div>
 
   <!-- SEÇÃO FINANÇAS -->
@@ -303,7 +370,7 @@
 
     <div class="finance-inputs">
       <div class="input-group">
-        <input type="number" id="depositInput" placeholder="Valor a adicionar (R$)" min="0" step="10">
+        <input type="number" id="depositInput" class="input-field" placeholder="Valor a adicionar (R$)" min="0" step="10">
         <button onclick="addFunds()">Guardar</button>
       </div>
     </div>
@@ -315,18 +382,17 @@
   </div>
 
   <script>
-    // ESTADO INICIAL
     const GOAL_FINANCE = 30000;
-    const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 70; // r=70 -> ~439.8
+    const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 70;
 
     let appData = {
       savedMoney: 0,
       stats: {
-        forca: { name: 'Força', level: 1, xp: 0, color: 'var(--accent-orange)' },
-        inteligencia: { name: 'Inteligência', level: 1, xp: 0, color: 'var(--accent-blue)' },
-        saude: { name: 'Saúde', level: 1, xp: 0, color: 'var(--accent-green)' },
-        carisma: { name: 'Carisma', level: 1, xp: 0, color: 'var(--accent-purple)' },
-        disciplina: { name: 'Disciplina', level: 1, xp: 0, color: 'var(--accent-yellow)' }
+        forca: { name: 'Força', level: 1, xp: 0, color: '#f97316' },
+        inteligencia: { name: 'Inteligência', level: 1, xp: 0, color: '#3b82f6' },
+        saude: { name: 'Saúde', level: 1, xp: 0, color: '#22c55e' },
+        carisma: { name: 'Carisma', level: 1, xp: 0, color: '#a855f7' },
+        disciplina: { name: 'Disciplina', level: 1, xp: 0, color: '#eab308' }
       },
       tasks: [
         { id: 1, title: '💪 Treinar', stat: 'forca', xpReward: 25, completed: false },
@@ -338,28 +404,25 @@
       ]
     };
 
-    // CARREGAR DADOS
     function loadData() {
       const saved = localStorage.getItem('lifeRpgData');
       if (saved) {
         appData = JSON.parse(saved);
       }
       renderStats();
+      renderStatSelectOptions();
       renderTasks();
       renderFinance();
     }
 
-    // SALVAR DADOS
     function saveData() {
       localStorage.setItem('lifeRpgData', JSON.stringify(appData));
     }
 
-    // CALCULAR XP NECESSÁRIO
     function getXpForNextLevel(level) {
       return level * 100;
     }
 
-    // RENDERIZAR ATRIBUTOS
     function renderStats() {
       const container = document.getElementById('statsContainer');
       container.innerHTML = '';
@@ -383,7 +446,39 @@
       }
     }
 
-    // RENDERIZAR TAREFAS
+    function renderStatSelectOptions() {
+      const select = document.getElementById('newTaskStat');
+      select.innerHTML = '';
+      for (let key in appData.stats) {
+        select.innerHTML += `<option value="${key}">${appData.stats[key].name}</option>`;
+      }
+    }
+
+    function addNewStat() {
+      const nameInput = document.getElementById('newStatName');
+      const colorInput = document.getElementById('newStatColor');
+
+      const name = nameInput.value.trim();
+      const color = colorInput.value;
+
+      if (!name) return;
+
+      const key = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_');
+
+      if (!appData.stats[key]) {
+        appData.stats[key] = {
+          name: name,
+          level: 1,
+          xp: 0,
+          color: color
+        };
+        nameInput.value = '';
+        saveData();
+        renderStats();
+        renderStatSelectOptions();
+      }
+    }
+
     function renderTasks() {
       const container = document.getElementById('tasksContainer');
       container.innerHTML = '';
@@ -391,20 +486,51 @@
       appData.tasks.forEach(task => {
         const statName = appData.stats[task.stat]?.name || task.stat;
         container.innerHTML += `
-          <div class="task-item ${task.completed ? 'completed' : ''}" onclick="toggleTask(${task.id})">
-            <div class="task-left">
+          <div class="task-item ${task.completed ? 'completed' : ''}">
+            <div class="task-left" onclick="toggleTask(${task.id})">
               <div class="checkbox">${task.completed ? '✓' : ''}</div>
               <div class="task-info">
                 <span class="task-title">${task.title}</span>
                 <span class="task-reward">+${task.xpReward} XP em ${statName}</span>
               </div>
             </div>
+            <button class="delete-btn" onclick="deleteTask(${task.id})">✕</button>
           </div>
         `;
       });
     }
 
-    // ALTERAR TAREFA & CONCEDER XP
+    function addNewTask() {
+      const titleInput = document.getElementById('newTaskTitle');
+      const statSelect = document.getElementById('newTaskStat');
+      const xpInput = document.getElementById('newTaskXp');
+
+      const title = titleInput.value.trim();
+      const stat = statSelect.value;
+      const xpReward = parseInt(xpInput.value) || 20;
+
+      if (!title || !stat) return;
+
+      const newTask = {
+        id: Date.now(),
+        title: title,
+        stat: stat,
+        xpReward: xpReward,
+        completed: false
+      };
+
+      appData.tasks.push(newTask);
+      titleInput.value = '';
+      saveData();
+      renderTasks();
+    }
+
+    function deleteTask(id) {
+      appData.tasks = appData.tasks.filter(t => t.id !== id);
+      saveData();
+      renderTasks();
+    }
+
     function toggleTask(id) {
       const task = appData.tasks.find(t => t.id === id);
       if (!task) return;
@@ -412,17 +538,17 @@
       task.completed = !task.completed;
       const stat = appData.stats[task.stat];
 
-      if (task.completed) {
-        stat.xp += task.xpReward;
-        // Lógica de Subir de Nível
-        while (stat.xp >= getXpForNextLevel(stat.level)) {
-          stat.xp -= getXpForNextLevel(stat.level);
-          stat.level++;
+      if (stat) {
+        if (task.completed) {
+          stat.xp += task.xpReward;
+          while (stat.xp >= getXpForNextLevel(stat.level)) {
+            stat.xp -= getXpForNextLevel(stat.level);
+            stat.level++;
+          }
+        } else {
+          stat.xp -= task.xpReward;
+          if (stat.xp < 0) stat.xp = 0;
         }
-      } else {
-        // Se desmarcar, remove o XP
-        stat.xp -= task.xpReward;
-        if (stat.xp < 0) stat.xp = 0;
       }
 
       saveData();
@@ -430,7 +556,6 @@
       renderTasks();
     }
 
-    // RENDERIZAR FINANÇAS E GRÁFICO CIRCULAR
     function renderFinance() {
       const saved = appData.savedMoney;
       const percent = Math.min((saved / GOAL_FINANCE) * 100, 100);
@@ -438,13 +563,11 @@
       document.getElementById('savedAmount').innerText = `R$ ${saved.toLocaleString('pt-BR')}`;
       document.getElementById('financePercent').innerText = `${percent.toFixed(1)}%`;
 
-      // Atualizar rosca em SVG
       const circle = document.getElementById('financeCircle');
       const offset = CIRCLE_CIRCUMFERENCE - (percent / 100) * CIRCLE_CIRCUMFERENCE;
       circle.style.strokeDashoffset = offset;
     }
 
-    // ADICIONAR FUNDOS
     function addFunds() {
       const input = document.getElementById('depositInput');
       const val = parseFloat(input.value);
@@ -457,7 +580,6 @@
       }
     }
 
-    // INICIALIZAR
     loadData();
   </script>
 </body>
