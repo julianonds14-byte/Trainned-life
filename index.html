@@ -36,20 +36,25 @@
     }
 
     header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       position: relative;
-      text-align: center;
       margin-bottom: 20px;
+      padding-top: 40px; /* Garante espaço para os botões no topo */
     }
 
     header h1 {
       font-size: 1.5rem;
       letter-spacing: 1px;
       margin-bottom: 4px;
+      text-align: center;
     }
 
     header p {
       color: var(--text-dim);
       font-size: 0.85rem;
+      text-align: center;
     }
 
     .header-btns {
@@ -58,6 +63,7 @@
       right: 0;
       display: flex;
       gap: 6px;
+      align-items: center;
     }
 
     .sound-toggle-btn, .vip-badge-btn {
@@ -66,8 +72,9 @@
       color: var(--text);
       border-radius: 10px;
       padding: 6px 10px;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       cursor: pointer;
+      white-space: nowrap;
     }
 
     .vip-badge-btn.active {
@@ -123,7 +130,6 @@
       gap: 8px;
     }
 
-    /* BOTÃO EXCLUIR ATRIBUTO DESTACADO */
     .btn-delete-attribute {
       background-color: rgba(239, 68, 68, 0.15);
       border: 1px solid rgba(239, 68, 68, 0.4);
@@ -362,6 +368,46 @@
       gap: 8px;
     }
 
+    .finance-summary {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 8px;
+      border-top: 1px solid var(--card-border);
+      font-size: 0.9rem;
+    }
+
+    .finance-summary-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .finance-summary-item span {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .finance-summary-item strong {
+      font-size: 1rem;
+      color: var(--text);
+    }
+
+    .edit-goal-btn {
+      background: none;
+      border: none;
+      color: var(--accent-blue);
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .edit-goal-btn:hover {
+      background-color: rgba(59, 130, 246, 0.1);
+    }
+
     button {
       background-color: var(--accent-green);
       color: #000;
@@ -412,7 +458,7 @@
       color: var(--text-dim);
     }
 
-    /* MODAL DE CONFIRMAÇÃO DE SEGURANÇA (DELETE) */
+    /* MODAL DE CONFIRMAÇÃO PARA EXCLUIR ATRIBUTO */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -541,8 +587,14 @@
     </div>
 
     <div class="finance-summary">
-      <span>Guardado: <strong id="savedAmount">R$ 0</strong></span>
-      <span>Meta: <strong>R$ 30.000</strong></span>
+      <div class="finance-summary-item">
+        <span>Guardado</span>
+        <strong id="savedAmount">R$ 0</strong>
+      </div>
+      <div class="finance-summary-item" style="text-align: right;">
+        <span>Meta <button class="edit-goal-btn" onclick="changeGoalAmount()" title="Alterar Valor da Meta">✏️ Editar</button></span>
+        <strong id="goalAmountText">R$ 30.000</strong>
+      </div>
     </div>
   </div>
 
@@ -570,9 +622,7 @@
   </div>
 
   <script>
-    const GOAL_FINANCE = 30000;
     const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 70;
-
     const VALID_VIP_CODES = ["VIP2026", "LIFERPG-PREMIUM", "MEU-CODIGO-SECRET"];
 
     const FREE_STAT_LIMIT = 3;
@@ -647,6 +697,7 @@
     let appData = {
       isVip: false,
       savedMoney: 0,
+      goalMoney: 30000,
       lastDate: new Date().toDateString(),
       stats: {
         forca: { name: 'Força', level: 1, xp: 0, color: '#f97316' },
@@ -721,6 +772,7 @@
       const saved = localStorage.getItem('lifeRpgData');
       if (saved) {
         appData = JSON.parse(saved);
+        if (!appData.goalMoney) appData.goalMoney = 30000;
       }
       const savedSound = localStorage.getItem('lifeRpgSound');
       if (savedSound !== null) {
@@ -789,7 +841,6 @@
       }
     }
 
-    /* MODAL DE SEGURANÇA PARA DELETAR ATRIBUTO */
     function openDeleteModal(key) {
       statKeyToDelete = key;
       const stat = appData.stats[key];
@@ -820,10 +871,7 @@
     function executeDeleteStat() {
       if (!statKeyToDelete || !appData.stats[statKeyToDelete]) return;
 
-      // Deleta o atributo
       delete appData.stats[statKeyToDelete];
-
-      // Deleta as tarefas vinculadas a esse atributo
       appData.tasks = appData.tasks.filter(t => t.stat !== statKeyToDelete);
 
       saveData();
@@ -984,14 +1032,33 @@
 
     function renderFinance() {
       const saved = appData.savedMoney;
-      const percent = Math.min((saved / GOAL_FINANCE) * 100, 100);
+      const goal = appData.goalMoney || 30000;
+      const percent = Math.min((saved / goal) * 100, 100);
 
       document.getElementById('savedAmount').innerText = `R$ ${saved.toLocaleString('pt-BR')}`;
+      document.getElementById('goalAmountText').innerText = `R$ ${goal.toLocaleString('pt-BR')}`;
       document.getElementById('financePercent').innerText = `${percent.toFixed(1)}%`;
 
       const circle = document.getElementById('financeCircle');
       const offset = CIRCLE_CIRCUMFERENCE - (percent / 100) * CIRCLE_CIRCUMFERENCE;
       circle.style.strokeDashoffset = offset;
+    }
+
+    function changeGoalAmount() {
+      const currentGoal = appData.goalMoney || 30000;
+      const newGoalStr = prompt("Digite o novo valor da sua Meta Financeira (R$):", currentGoal);
+
+      if (!newGoalStr) return;
+
+      const newGoal = parseFloat(newGoalStr.replace(/[^0-9.]/g, ''));
+
+      if (!isNaN(newGoal) && newGoal > 0) {
+        appData.goalMoney = newGoal;
+        saveData();
+        renderFinance();
+      } else {
+        alert("Por favor, digite um valor numérico válido.");
+      }
     }
 
     function addFunds() {
