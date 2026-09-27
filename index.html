@@ -294,7 +294,7 @@
       color: var(--accent-blue);
     }
 
-    /* FINANÇAS - RESUMO SEPARADO */
+    /* FINANÇAS */
     .finance-card {
       background-color: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -594,7 +594,7 @@
   <!-- BANNER VIP -->
   <div class="vip-banner" id="vipBanner">
     <h3>👑 Desbloqueie o Life RPG VIP</h3>
-    <p>Tenha atributos e hábitos ilimitados!</p>
+    <p>Use um código VIP para liberar recursos ilimitados!</p>
     <button style="background: var(--accent-yellow); color: #000;" onclick="promptVipCode()">Inserir Código VIP</button>
   </div>
 
@@ -616,7 +616,13 @@
 
   <script>
     const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 70;
-    const VALID_VIP_CODES = ["VIP2026", "LIFERPG-PREMIUM", "MEU-CODIGO-SECRET"];
+
+    // DEFINIÇÃO DOS 3 CÓDIGOS OFICIAIS
+    const VIP_CODES = {
+      "VIPTEST10": 1 * 60 * 1000,                  // 1 Minuto
+      "VIPMENSAL3030": 30 * 24 * 60 * 60 * 1000,   // 30 Dias
+      "VIPANUAL365DIAS10": 365 * 24 * 60 * 60 * 1000 // 365 Dias
+    };
 
     const FREE_STAT_LIMIT = 3;
     const FREE_TASK_LIMIT = 5;
@@ -682,6 +688,7 @@
 
     let appData = {
       isVip: false,
+      vipExpiresAt: null,
       savedMoney: 0,
       goalMoney: 30000,
       lastDate: new Date().toDateString(),
@@ -715,27 +722,87 @@
       }
     }
 
+    // Monitora a expiração do VIP em tempo real
+    function checkVipTimer() {
+      if (!appData.isVip || !appData.vipExpiresAt) return;
+
+      const now = Date.now();
+      const timeLeftMs = appData.vipExpiresAt - now;
+
+      if (timeLeftMs <= 0) {
+        appData.isVip = false;
+        appData.vipExpiresAt = null;
+        saveData();
+        updateVipUI();
+        renderStats();
+        renderTasks();
+        alert("⏰ Seu período VIP expirou! O aplicativo voltou para o plano Grátis.");
+      } else {
+        const vipBtn = document.getElementById('vipStatusBtn');
+        if (vipBtn) {
+          const totalSecs = Math.ceil(timeLeftMs / 1000);
+          
+          if (totalSecs <= 120) {
+            // Exibe em segundos se faltar menos de 2 minutos
+            vipBtn.innerText = `👑 VIP (${totalSecs}s)`;
+          } else {
+            // Exibe em Dias / Horas se for um tempo maior
+            const days = Math.floor(totalSecs / (24 * 3600));
+            const hours = Math.floor((totalSecs % (24 * 3600)) / 3600);
+            if (days > 0) {
+              vipBtn.innerText = `👑 VIP (${days}d ${hours}h)`;
+            } else {
+              const mins = Math.floor((totalSecs % 3600) / 60);
+              vipBtn.innerText = `👑 VIP (${mins}m)`;
+            }
+          }
+        }
+      }
+    }
+
+    setInterval(checkVipTimer, 1000);
+
     function promptVipCode() {
       if (appData.isVip) {
-        alert("Sua conta já é VIP Ilimitada! 🎉");
+        const disable = confirm("Sua assinatura VIP está ativa. Deseja cancelar agora?");
+        if (disable) {
+          appData.isVip = false;
+          appData.vipExpiresAt = null;
+          saveData();
+          alert("Status VIP cancelado!");
+          updateVipUI();
+          renderStats();
+          renderTasks();
+        }
         return;
       }
 
-      const inputCode = prompt("Digite seu código de ativação VIP:");
+      const inputCode = prompt("Digite o código de acesso VIP:");
       if (!inputCode) return;
 
       const cleanCode = inputCode.trim().toUpperCase();
 
-      if (VALID_VIP_CODES.includes(cleanCode)) {
+      if (VIP_CODES[cleanCode]) {
+        const durationMs = VIP_CODES[cleanCode];
+        
         appData.isVip = true;
+        appData.vipExpiresAt = Date.now() + durationMs;
         saveData();
         playSound('levelup');
-        alert("🎉 PARABÉNS! Versão VIP Ativada!");
+
+        if (cleanCode === 'VIPTEST10') {
+          alert("🎉 VIP de Teste ativado por 1 MINUTO!");
+        } else if (cleanCode === 'VIPMENSAL3030') {
+          alert("🎉 VIP Mensal ativado por 30 DIAS!");
+        } else if (cleanCode === 'VIPANUAL365DIAS10') {
+          alert("🎉 VIP Anual ativado por 365 DIAS!");
+        }
+
         updateVipUI();
         renderStats();
         renderTasks();
       } else {
-        alert("❌ Código inválido.");
+        alert("❌ Código inválido!");
       }
     }
 
@@ -744,9 +811,9 @@
       const vipBanner = document.getElementById('vipBanner');
 
       if (appData.isVip) {
-        vipBtn.innerText = '👑 VIP ATIVO';
         vipBtn.classList.add('active');
         vipBanner.style.display = 'none';
+        checkVipTimer();
       } else {
         vipBtn.innerText = '🔑 VIP';
         vipBtn.classList.remove('active');
