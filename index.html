@@ -325,11 +325,17 @@
       background-color: var(--accent-green);
       color: #000;
       border: none;
-      padding: 10px 16px;
+      padding: 10px 14px;
       border-radius: 8px;
       font-weight: 700;
       cursor: pointer;
       transition: opacity 0.2s;
+    }
+
+    button.btn-withdraw {
+      background-color: #311c22;
+      color: var(--accent-red);
+      border: 1px solid #52232a;
     }
 
     button:hover {
@@ -404,8 +410,9 @@
 
     <div class="finance-inputs">
       <div class="input-group">
-        <input type="number" id="depositInput" class="input-field" placeholder="Valor a adicionar (R$)" min="0" step="10">
-        <button onclick="addFunds()">Guardar</button>
+        <input type="number" id="depositInput" class="input-field" placeholder="Valor (R$)" min="0" step="10">
+        <button onclick="addFunds()">+ Guardar</button>
+        <button class="btn-withdraw" onclick="withdrawFunds()">- Retirar</button>
       </div>
     </div>
 
@@ -422,7 +429,6 @@
     let soundEnabled = true;
     let audioCtx = null;
 
-    // Inicializa o motor de áudio no primeiro toque do utilizador
     function initAudio() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -435,7 +441,7 @@
     document.addEventListener('touchstart', initAudio, { once: true });
     document.addEventListener('click', initAudio, { once: true });
 
-    function playTone(freq, type, duration, delay = 0) {
+    function playTone(freq, type, duration, delay = 0, startVol = 0.1) {
       if (!soundEnabled) return;
       initAudio();
       
@@ -445,10 +451,10 @@
           const gain = audioCtx.createGain();
           
           osc.type = type;
-          osc.frequency.value = freq;
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
           
-          gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+          gain.gain.setValueAtTime(startVol, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
           
           osc.connect(gain);
           gain.connect(audioCtx.destination);
@@ -465,19 +471,17 @@
       if (!soundEnabled) return;
       
       if (type === 'check') {
-        // Efeito Blip 8-bit
-        playTone(523.25, 'sine', 0.08, 0);   // C5
-        playTone(659.25, 'sine', 0.12, 60);  // E5
+        // "Pop" sutil e satisfatório
+        playTone(600, 'sine', 0.05, 0, 0.08);
       } else if (type === 'levelup') {
-        // Fanfarra Nível Concluído
-        playTone(440, 'triangle', 0.1, 0);    // A4
-        playTone(554.37, 'triangle', 0.1, 80); // C#5
-        playTone(659.25, 'triangle', 0.1, 160); // E5
-        playTone(880, 'triangle', 0.25, 240);  // A5
+        // Acorde suave ascendente
+        playTone(523.25, 'sine', 0.12, 0, 0.08);   // C5
+        playTone(659.25, 'sine', 0.12, 70, 0.08);  // E5
+        playTone(783.99, 'sine', 0.18, 140, 0.08); // G5
       } else if (type === 'money') {
-        // Som de moedas
-        playTone(987.77, 'square', 0.08, 0);  // B5
-        playTone(1318.51, 'square', 0.15, 70); // E6
+        // Barulhinho sutil de moeda tinindo
+        playTone(1800, 'sine', 0.04, 0, 0.05);
+        playTone(2400, 'sine', 0.08, 40, 0.05);
       }
     }
 
@@ -710,6 +714,23 @@
 
       if (!isNaN(val) && val > 0) {
         appData.savedMoney += val;
+        input.value = '';
+        playSound('money');
+        saveData();
+        renderFinance();
+      }
+    }
+
+    function withdrawFunds() {
+      const input = document.getElementById('depositInput');
+      const val = parseFloat(input.value);
+
+      if (!isNaN(val) && val > 0) {
+        if (appData.savedMoney - val < 0) {
+          alert("O valor de retirada não pode ser maior do que o montante guardado.");
+          return;
+        }
+        appData.savedMoney -= val;
         input.value = '';
         playSound('money');
         saveData();
