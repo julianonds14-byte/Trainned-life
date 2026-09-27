@@ -112,8 +112,31 @@
     .stat-header {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       font-size: 0.9rem;
       font-weight: 600;
+    }
+
+    .stat-title-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .delete-stat-icon {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+      line-height: 1;
+    }
+
+    .delete-stat-icon:hover {
+      color: var(--accent-red);
+      background-color: rgba(239, 68, 68, 0.1);
     }
 
     .stat-bar-bg {
@@ -349,28 +372,20 @@
       transition: opacity 0.2s;
     }
 
+    button:disabled {
+      background-color: #333a4d !important;
+      color: #717b94 !important;
+      cursor: not-allowed;
+    }
+
     button.btn-withdraw {
       background-color: #311c22;
       color: var(--accent-red);
       border: 1px solid #52232a;
     }
 
-    button:hover {
+    button:hover:not(:disabled) {
       opacity: 0.9;
-    }
-
-    .finance-summary {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.85rem;
-      color: var(--text-dim);
-      border-top: 1px solid var(--card-border);
-      padding-top: 10px;
-    }
-
-    .finance-summary span strong {
-      color: var(--text);
     }
 
     /* BANNER DE ATIVAÇÃO VIP */
@@ -393,6 +408,71 @@
 
     .vip-banner p {
       font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+
+    /* MODAL DE SEGURANÇA PARA DELETAR ATRIBUTO */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+
+    .modal-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--accent-red);
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 400px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .modal-title {
+      font-size: 1.1rem;
+      color: var(--accent-red);
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-body {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    .modal-body strong {
+      color: var(--text);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 6px;
+    }
+
+    .btn-danger {
+      background-color: var(--accent-red);
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      border: 1px solid var(--card-border);
       color: var(--text-dim);
     }
   </style>
@@ -478,6 +558,22 @@
     <button style="background: var(--accent-yellow); color: #000;" onclick="promptVipCode()">Inserir Código de Ativação</button>
   </div>
 
+  <!-- MODAL DE EXCLUSÃO COMPLETA DE ATRIBUTO -->
+  <div class="modal-overlay" id="deleteStatModal">
+    <div class="modal-card">
+      <div class="modal-title">⚠️ Excluir Atributo</div>
+      <div class="modal-body">
+        Esta ação é <strong style="color: var(--accent-red)">irreversível</strong>! Apagar o atributo <strong id="deleteStatNameTarget"></strong> também removerá todas as tarefas ligadas a ele.<br><br>
+        Digite a palavra <strong style="color: #fff">DELETE</strong> no campo abaixo para confirmar:
+      </div>
+      <input type="text" id="deleteConfirmInput" class="input-field" placeholder="Digite DELETE" oninput="validateDeleteInput()">
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeDeleteModal()">Cancelar</button>
+        <button id="confirmDeleteStatBtn" class="btn-danger" disabled onclick="executeDeleteStat()">Excluir</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const GOAL_FINANCE = 30000;
     const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 70;
@@ -490,6 +586,7 @@
 
     let soundEnabled = true;
     let audioCtx = null;
+    let statKeyToDelete = null;
 
     function initAudio() {
       if (!audioCtx) {
@@ -659,11 +756,21 @@
 
       const statKeys = Object.keys(appData.stats);
       const limitText = document.getElementById('statLimitText');
+      const addBtn = document.getElementById('addStatBtn');
 
       if (!appData.isVip) {
         limitText.innerText = `(${statKeys.length}/${FREE_STAT_LIMIT} Grátis)`;
+        if (statKeys.length >= FREE_STAT_LIMIT) {
+          addBtn.innerText = "🔒 Limite";
+          addBtn.disabled = true;
+        } else {
+          addBtn.innerText = "+ Atributo";
+          addBtn.disabled = false;
+        }
       } else {
         limitText.innerText = `(Ilimitado 👑)`;
+        addBtn.innerText = "+ Atributo";
+        addBtn.disabled = false;
       }
 
       for (let key in appData.stats) {
@@ -674,7 +781,10 @@
         container.innerHTML += `
           <div class="stat-row">
             <div class="stat-header">
-              <span>${stat.name} (Nível ${stat.level})</span>
+              <div class="stat-title-group">
+                <span>${stat.name} (Nível ${stat.level})</span>
+                <button class="delete-stat-icon" onclick="openDeleteModal('${key}')" title="Excluir Atributo">🗑️</button>
+              </div>
               <span>${stat.xp} / ${nextXp} XP</span>
             </div>
             <div class="stat-bar-bg">
@@ -683,6 +793,50 @@
           </div>
         `;
       }
+    }
+
+    /* SISTEMA SEGURO DE DELETAR ATRIBUTO */
+    function openDeleteModal(key) {
+      statKeyToDelete = key;
+      const stat = appData.stats[key];
+      if (!stat) return;
+
+      document.getElementById('deleteStatNameTarget').innerText = `"${stat.name}"`;
+      document.getElementById('deleteConfirmInput').value = '';
+      document.getElementById('confirmDeleteStatBtn').disabled = true;
+      document.getElementById('deleteStatModal').style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+      statKeyToDelete = null;
+      document.getElementById('deleteStatModal').style.display = 'none';
+    }
+
+    function validateDeleteInput() {
+      const inputVal = document.getElementById('deleteConfirmInput').value.trim();
+      const btn = document.getElementById('confirmDeleteStatBtn');
+      
+      if (inputVal === 'DELETE') {
+        btn.disabled = false;
+      } else {
+        btn.disabled = true;
+      }
+    }
+
+    function executeDeleteStat() {
+      if (!statKeyToDelete || !appData.stats[statKeyToDelete]) return;
+
+      // 1. Apaga o atributo
+      delete appData.stats[statKeyToDelete];
+
+      // 2. Apaga todas as tarefas vinculadas a esse atributo
+      appData.tasks = appData.tasks.filter(t => t.stat !== statKeyToDelete);
+
+      saveData();
+      closeDeleteModal();
+      renderStats();
+      renderStatSelectOptions();
+      renderTasks();
     }
 
     function renderStatSelectOptions() {
@@ -731,11 +885,21 @@
       container.innerHTML = '';
 
       const limitText = document.getElementById('taskLimitText');
+      const addBtn = document.getElementById('addTaskBtn');
 
       if (!appData.isVip) {
         limitText.innerText = `(${appData.tasks.length}/${FREE_TASK_LIMIT} Grátis)`;
+        if (appData.tasks.length >= FREE_TASK_LIMIT) {
+          addBtn.innerText = "🔒 Limite";
+          addBtn.disabled = true;
+        } else {
+          addBtn.innerText = "+ Criar";
+          addBtn.disabled = false;
+        }
       } else {
         limitText.innerText = `(Ilimitado 👑)`;
+        addBtn.innerText = "+ Criar";
+        addBtn.disabled = false;
       }
 
       appData.tasks.forEach(task => {
