@@ -52,17 +52,28 @@
       font-size: 0.85rem;
     }
 
-    .sound-toggle-btn {
+    .header-btns {
       position: absolute;
       top: 0;
       right: 0;
+      display: flex;
+      gap: 6px;
+    }
+
+    .sound-toggle-btn, .vip-badge-btn {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       color: var(--text);
       border-radius: 10px;
       padding: 6px 10px;
-      font-size: 1.1rem;
+      font-size: 0.9rem;
       cursor: pointer;
+    }
+
+    .vip-badge-btn.active {
+      border-color: var(--accent-yellow);
+      color: var(--accent-yellow);
+      font-weight: bold;
     }
 
     .section-title {
@@ -71,7 +82,13 @@
       margin: 20px 0 12px 0;
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: space-between;
+    }
+
+    .limit-badge {
+      font-size: 0.75rem;
+      color: var(--accent-yellow);
+      font-weight: normal;
     }
 
     /* CARD DE ATRIBUTOS */
@@ -355,18 +372,47 @@
     .finance-summary span strong {
       color: var(--text);
     }
+
+    /* BANNER DE ATIVAÇÃO VIP */
+    .vip-banner {
+      background: linear-gradient(135deg, #2b1f0d, #1a1d26);
+      border: 1px solid var(--accent-yellow);
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 24px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .vip-banner h3 {
+      color: var(--accent-yellow);
+      font-size: 1.1rem;
+    }
+
+    .vip-banner p {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
   </style>
 </head>
 <body>
 
   <header>
-    <button class="sound-toggle-btn" id="soundBtn" onclick="toggleSound()">🔊</button>
+    <div class="header-btns">
+      <button class="vip-badge-btn" id="vipStatusBtn" onclick="promptVipCode()">🔑 Ativar VIP</button>
+      <button class="sound-toggle-btn" id="soundBtn" onclick="toggleSound()">🔊</button>
+    </div>
     <h1>🎮 LIFE RPG</h1>
     <p>Evolua na vida real</p>
   </header>
 
   <!-- SEÇÃO DE ATRIBUTOS -->
-  <div class="section-title">⚡ Atributos & Níveis</div>
+  <div class="section-title">
+    <span>⚡ Atributos & Níveis</span>
+    <span class="limit-badge" id="statLimitText"></span>
+  </div>
   <div class="stats-card" id="statsContainer"></div>
 
   <!-- CRIAR NOVO ATRIBUTO -->
@@ -374,12 +420,15 @@
     <div class="form-row">
       <input type="text" id="newStatName" class="input-field" placeholder="Novo Atributo (ex: Foco)">
       <input type="color" id="newStatColor" value="#3b82f6" title="Escolha uma cor">
-      <button onclick="addNewStat()">+ Atributo</button>
+      <button id="addStatBtn" onclick="addNewStat()">+ Atributo</button>
     </div>
   </div>
 
   <!-- SEÇÃO DE TAREFAS DIÁRIAS -->
-  <div class="section-title">✅ Hábitos Diários</div>
+  <div class="section-title">
+    <span>✅ Hábitos Diários</span>
+    <span class="limit-badge" id="taskLimitText"></span>
+  </div>
 
   <!-- ADICIONAR NOVA TAREFA -->
   <div class="add-card">
@@ -387,7 +436,7 @@
     <div class="form-row">
       <select id="newTaskStat"></select>
       <input type="number" id="newTaskXp" class="input-field" placeholder="XP" value="20" min="5" max="100" style="width: 80px;">
-      <button onclick="addNewTask()">+ Criar</button>
+      <button id="addTaskBtn" onclick="addNewTask()">+ Criar</button>
     </div>
   </div>
 
@@ -422,9 +471,22 @@
     </div>
   </div>
 
+  <!-- BANNER PROMOÇÃO VIP -->
+  <div class="vip-banner" id="vipBanner">
+    <h3>👑 Desbloqueie o Life RPG VIP</h3>
+    <p>Tenha atributos e hábitos ilimitados para transformar a sua rotina!</p>
+    <button style="background: var(--accent-yellow); color: #000;" onclick="promptVipCode()">Inserir Código de Ativação</button>
+  </div>
+
   <script>
     const GOAL_FINANCE = 30000;
     const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 70;
+
+    // CÓDIGOS VÁLIDOS PARA ATIVAÇÃO VIP
+    const VALID_VIP_CODES = ["VIP2026", "LIFERPG-PREMIUM", "MEU-CODIGO-SECRET"];
+
+    const FREE_STAT_LIMIT = 3;
+    const FREE_TASK_LIMIT = 5;
 
     let soundEnabled = true;
     let audioCtx = null;
@@ -471,19 +533,16 @@
       if (!soundEnabled) return;
       
       if (type === 'check') {
-        // Som de tarefa concluída: Duplo clique bem audível e satisfatório (Tipo Mario Coin/Ding)
-        playTone(987.77, 'sine', 0.08, 0, 0.4);    // B5 (bem audível)
-        playTone(1318.51, 'sine', 0.20, 60, 0.5);  // E6 (agudo satisfatório)
+        playTone(987.77, 'sine', 0.08, 0, 0.4);
+        playTone(1318.51, 'sine', 0.20, 60, 0.5);
       } else if (type === 'levelup') {
-        // Fanfarra de Level Up nítida
-        playTone(523.25, 'sine', 0.1, 0, 0.4);   // C5
-        playTone(659.25, 'sine', 0.1, 80, 0.4);  // E5
-        playTone(783.99, 'sine', 0.1, 160, 0.4); // G5
-        playTone(1046.50, 'sine', 0.3, 240, 0.5); // C6
+        playTone(523.25, 'sine', 0.1, 0, 0.4);
+        playTone(659.25, 'sine', 0.1, 80, 0.4);
+        playTone(783.99, 'sine', 0.1, 160, 0.4);
+        playTone(1046.50, 'sine', 0.3, 240, 0.5);
       } else if (type === 'money') {
-        // Som estilo PIX PicPay: Notação cristalina e limpa em 2 tempos rápidos
-        playTone(1567.98, 'sine', 0.08, 0, 0.35);  // G6
-        playTone(2093.00, 'sine', 0.25, 60, 0.45);  // C7 (Brilho limpo de moeda PicPay)
+        playTone(1567.98, 'sine', 0.08, 0, 0.35);
+        playTone(2093.00, 'sine', 0.25, 60, 0.45);
       }
     }
 
@@ -495,22 +554,18 @@
     }
 
     let appData = {
+      isVip: false,
       savedMoney: 0,
       lastDate: new Date().toDateString(),
       stats: {
         forca: { name: 'Força', level: 1, xp: 0, color: '#f97316' },
         inteligencia: { name: 'Inteligência', level: 1, xp: 0, color: '#3b82f6' },
-        saude: { name: 'Saúde', level: 1, xp: 0, color: '#22c55e' },
-        carisma: { name: 'Carisma', level: 1, xp: 0, color: '#a855f7' },
-        disciplina: { name: 'Disciplina', level: 1, xp: 0, color: '#eab308' }
+        saude: { name: 'Saúde', level: 1, xp: 0, color: '#22c55e' }
       },
       tasks: [
         { id: 1, title: '💪 Treinar', stat: 'forca', xpReward: 25, completed: false },
         { id: 2, title: '💊 Tomar Creatina', stat: 'saude', xpReward: 15, completed: false },
-        { id: 3, title: '📚 Ler 10 páginas', stat: 'inteligencia', xpReward: 20, completed: false },
-        { id: 4, title: '💧 Beber 3L de Água', stat: 'saude', xpReward: 15, completed: false },
-        { id: 5, title: '🗣️ Treinar Oratória / Socializar', stat: 'carisma', xpReward: 20, completed: false },
-        { id: 6, title: '🎯 Cumprir Rotina sem Procrastinar', stat: 'disciplina', xpReward: 30, completed: false }
+        { id: 3, title: '📚 Ler 10 páginas', stat: 'inteligencia', xpReward: 20, completed: false }
       ]
     };
 
@@ -524,11 +579,50 @@
     }
 
     function resetDayManually() {
-      if (confirm("Deseja desmarcar todas as tarefas para um novo dia? (Seu XP acumulado NÃO será perdido)")) {
+      if (confirm("Deseja desmarcar todas as tarefas para um novo dia?")) {
         appData.tasks.forEach(t => t.completed = false);
         appData.lastDate = new Date().toDateString();
         saveData();
         renderTasks();
+      }
+    }
+
+    function promptVipCode() {
+      if (appData.isVip) {
+        alert("Sua conta já é VIP Ilimitada! 🎉");
+        return;
+      }
+
+      const inputCode = prompt("Digite seu código de ativação VIP:");
+      if (!inputCode) return;
+
+      const cleanCode = inputCode.trim().toUpperCase();
+
+      if (VALID_VIP_CODES.includes(cleanCode)) {
+        appData.isVip = true;
+        saveData();
+        playSound('levelup');
+        alert("🎉 PARABÉNS! Versão VIP Ativada com sucesso! Agora você tem recursos ilimitados.");
+        updateVipUI();
+        renderStats();
+        renderTasks();
+      } else {
+        alert("❌ Código inválido. Verifique o código e tente novamente.");
+      }
+    }
+
+    function updateVipUI() {
+      const vipBtn = document.getElementById('vipStatusBtn');
+      const vipBanner = document.getElementById('vipBanner');
+
+      if (appData.isVip) {
+        vipBtn.innerText = '👑 VIP ATIVO';
+        vipBtn.classList.add('active');
+        vipBanner.style.display = 'none';
+      } else {
+        vipBtn.innerText = '🔑 Ativar VIP';
+        vipBtn.classList.remove('active');
+        vipBanner.style.display = 'flex';
       }
     }
 
@@ -544,6 +638,7 @@
       }
 
       checkDailyReset();
+      updateVipUI();
       renderStats();
       renderStatSelectOptions();
       renderTasks();
@@ -561,6 +656,15 @@
     function renderStats() {
       const container = document.getElementById('statsContainer');
       container.innerHTML = '';
+
+      const statKeys = Object.keys(appData.stats);
+      const limitText = document.getElementById('statLimitText');
+
+      if (!appData.isVip) {
+        limitText.innerText = `(${statKeys.length}/${FREE_STAT_LIMIT} Grátis)`;
+      } else {
+        limitText.innerText = `(Ilimitado 👑)`;
+      }
 
       for (let key in appData.stats) {
         const stat = appData.stats[key];
@@ -590,6 +694,14 @@
     }
 
     function addNewStat() {
+      const currentStatsCount = Object.keys(appData.stats).length;
+
+      if (!appData.isVip && currentStatsCount >= FREE_STAT_LIMIT) {
+        alert("🔒 Limite de 3 atributos atingido no plano Grátis!\n\nAtive a chave VIP para criar atributos ilimitados.");
+        promptVipCode();
+        return;
+      }
+
       const nameInput = document.getElementById('newStatName');
       const colorInput = document.getElementById('newStatColor');
 
@@ -618,6 +730,14 @@
       const container = document.getElementById('tasksContainer');
       container.innerHTML = '';
 
+      const limitText = document.getElementById('taskLimitText');
+
+      if (!appData.isVip) {
+        limitText.innerText = `(${appData.tasks.length}/${FREE_TASK_LIMIT} Grátis)`;
+      } else {
+        limitText.innerText = `(Ilimitado 👑)`;
+      }
+
       appData.tasks.forEach(task => {
         const statName = appData.stats[task.stat]?.name || task.stat;
         container.innerHTML += `
@@ -636,6 +756,12 @@
     }
 
     function addNewTask() {
+      if (!appData.isVip && appData.tasks.length >= FREE_TASK_LIMIT) {
+        alert("🔒 Limite de 5 tarefas atingido no plano Grátis!\n\nAtive a chave VIP para adicionar tarefas ilimitadas.");
+        promptVipCode();
+        return;
+      }
+
       const titleInput = document.getElementById('newTaskTitle');
       const statSelect = document.getElementById('newTaskStat');
       const xpInput = document.getElementById('newTaskXp');
