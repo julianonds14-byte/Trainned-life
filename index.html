@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life RPG & Finanças</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --card-bg: #1a1d26;
+      --card-border: #2a2e3d;
+      --text: #f0f2f8;
+      --text-dim: #8b92a5;
+      --accent-green: #22c55e;
+      --accent-blue: #3b82f6;
+      --accent-purple: #a855f7;
+      --accent-orange: #f97316;
+      --accent-yellow: #eab308;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 16px;
+      max-width: 480px;
+      margin: 0 auto;
+      padding-bottom: 80px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    header p {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 20px 0 12px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* CARD DE ATRIBUTOS */
+    .stats-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .stat-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .stat-bar-bg {
+      height: 8px;
+      background-color: #262a36;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .stat-bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 4px;
+      transition: width 0.4s ease;
+    }
+
+    /* TAREFAS DIÁRIAS */
+    .tasks-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .task-item {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .task-item.completed {
+      opacity: 0.5;
+      text-decoration: line-through;
+    }
+
+    .task-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .checkbox {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 2px solid var(--text-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.8rem;
+    }
+
+    .task-item.completed .checkbox {
+      background-color: var(--accent-green);
+      border-color: var(--accent-green);
+      color: #000;
+    }
+
+    .task-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .task-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .task-reward {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    /* PAINEL FINANCEIRO DA META */
+    .finance-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .chart-container {
+      position: relative;
+      width: 160px;
+      height: 160px;
+    }
+
+    .chart-container svg {
+      transform: rotate(-90deg);
+      width: 100%;
+      height: 100%;
+    }
+
+    .chart-bg {
+      fill: none;
+      stroke: #262a36;
+      stroke-width: 12;
+    }
+
+    .chart-progress {
+      fill: none;
+      stroke: var(--accent-green);
+      stroke-width: 12;
+      stroke-dasharray: 440;
+      stroke-dashoffset: 440;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.6s ease;
+    }
+
+    .chart-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .chart-percent {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--accent-green);
+    }
+
+    .chart-subtitle {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+    }
+
+    .finance-inputs {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    input[type="number"] {
+      flex: 1;
+      background-color: var(--bg);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    button {
+      background-color: var(--accent-green);
+      color: #000;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .finance-summary {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      border-top: 1px solid var(--card-border);
+      padding-top: 10px;
+    }
+
+    .finance-summary span strong {
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🎮 LIFE RPG</h1>
+    <p>Evolua na vida real</p>
+  </header>
+
+  <!-- SEÇÃO DE ATRIBUTOS -->
+  <div class="section-title">⚡ Atributos & Níveis</div>
+  <div class="stats-card" id="statsContainer"></div>
+
+  <!-- SEÇÃO DE TAREFAS DIÁRIAS -->
+  <div class="section-title">✅ Hábitos Diários</div>
+  <div class="tasks-list" id="tasksContainer"></div>
+
+  <!-- SEÇÃO FINANÇAS -->
+  <div class="section-title">💰 Meta Financeira</div>
+  <div class="finance-card">
+    <div class="chart-container">
+      <svg viewBox="0 0 160 160">
+        <circle class="chart-bg" cx="80" cy="80" r="70"></circle>
+        <circle class="chart-progress" id="financeCircle" cx="80" cy="80" r="70"></circle>
+      </svg>
+      <div class="chart-text">
+        <div class="chart-percent" id="financePercent">0%</div>
+        <div class="chart-subtitle">Concluído</div>
+      </div>
+    </div>
+
+    <div class="finance-inputs">
+      <div class="input-group">
+        <input type="number" id="depositInput" placeholder="Valor a adicionar (R$)" min="0" step="10">
+        <button onclick="addFunds()">Guardar</button>
+      </div>
+    </div>
+
+    <div class="finance-summary">
+      <span>Guardado: <strong id="savedAmount">R$ 0</strong></span>
+      <span>Meta: <strong>R$ 30.000</strong></span>
+    </div>
+  </div>
+
+  <script>
+    // ESTADO INICIAL
+    const GOAL_FINANCE = 30000;
+    const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 70; // r=70 -> ~439.8
+
+    let appData = {
+      savedMoney: 0,
+      stats: {
+        forca: { name: 'Força', level: 1, xp: 0, color: 'var(--accent-orange)' },
+        inteligencia: { name: 'Inteligência', level: 1, xp: 0, color: 'var(--accent-blue)' },
+        saude: { name: 'Saúde', level: 1, xp: 0, color: 'var(--accent-green)' },
+        carisma: { name: 'Carisma', level: 1, xp: 0, color: 'var(--accent-purple)' },
+        disciplina: { name: 'Disciplina', level: 1, xp: 0, color: 'var(--accent-yellow)' }
+      },
+      tasks: [
+        { id: 1, title: '💪 Treinar', stat: 'forca', xpReward: 25, completed: false },
+        { id: 2, title: '💊 Tomar Creatina', stat: 'saude', xpReward: 15, completed: false },
+        { id: 3, title: '📚 Ler 10 páginas', stat: 'inteligencia', xpReward: 20, completed: false },
+        { id: 4, title: '💧 Beber 3L de Água', stat: 'saude', xpReward: 15, completed: false },
+        { id: 5, title: '🗣️ Treinar Oratória / Socializar', stat: 'carisma', xpReward: 20, completed: false },
+        { id: 6, title: '🎯 Cumprir Rotina sem Procrastinar', stat: 'disciplina', xpReward: 30, completed: false }
+      ]
+    };
+
+    // CARREGAR DADOS
+    function loadData() {
+      const saved = localStorage.getItem('lifeRpgData');
+      if (saved) {
+        appData = JSON.parse(saved);
+      }
+      renderStats();
+      renderTasks();
+      renderFinance();
+    }
+
+    // SALVAR DADOS
+    function saveData() {
+      localStorage.setItem('lifeRpgData', JSON.stringify(appData));
+    }
+
+    // CALCULAR XP NECESSÁRIO
+    function getXpForNextLevel(level) {
+      return level * 100;
+    }
+
+    // RENDERIZAR ATRIBUTOS
+    function renderStats() {
+      const container = document.getElementById('statsContainer');
+      container.innerHTML = '';
+
+      for (let key in appData.stats) {
+        const stat = appData.stats[key];
+        const nextXp = getXpForNextLevel(stat.level);
+        const percent = Math.min((stat.xp / nextXp) * 100, 100);
+
+        container.innerHTML += `
+          <div class="stat-row">
+            <div class="stat-header">
+              <span>${stat.name} (Nível ${stat.level})</span>
+              <span>${stat.xp} / ${nextXp} XP</span>
+            </div>
+            <div class="stat-bar-bg">
+              <div class="stat-bar-fill" style="width: ${percent}%; background-color: ${stat.color}"></div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // RENDERIZAR TAREFAS
+    function renderTasks() {
+      const container = document.getElementById('tasksContainer');
+      container.innerHTML = '';
+
+      appData.tasks.forEach(task => {
+        const statName = appData.stats[task.stat]?.name || task.stat;
+        container.innerHTML += `
+          <div class="task-item ${task.completed ? 'completed' : ''}" onclick="toggleTask(${task.id})">
+            <div class="task-left">
+              <div class="checkbox">${task.completed ? '✓' : ''}</div>
+              <div class="task-info">
+                <span class="task-title">${task.title}</span>
+                <span class="task-reward">+${task.xpReward} XP em ${statName}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // ALTERAR TAREFA & CONCEDER XP
+    function toggleTask(id) {
+      const task = appData.tasks.find(t => t.id === id);
+      if (!task) return;
+
+      task.completed = !task.completed;
+      const stat = appData.stats[task.stat];
+
+      if (task.completed) {
+        stat.xp += task.xpReward;
+        // Lógica de Subir de Nível
+        while (stat.xp >= getXpForNextLevel(stat.level)) {
+          stat.xp -= getXpForNextLevel(stat.level);
+          stat.level++;
+        }
+      } else {
+        // Se desmarcar, remove o XP
+        stat.xp -= task.xpReward;
+        if (stat.xp < 0) stat.xp = 0;
+      }
+
+      saveData();
+      renderStats();
+      renderTasks();
+    }
+
+    // RENDERIZAR FINANÇAS E GRÁFICO CIRCULAR
+    function renderFinance() {
+      const saved = appData.savedMoney;
+      const percent = Math.min((saved / GOAL_FINANCE) * 100, 100);
+
+      document.getElementById('savedAmount').innerText = `R$ ${saved.toLocaleString('pt-BR')}`;
+      document.getElementById('financePercent').innerText = `${percent.toFixed(1)}%`;
+
+      // Atualizar rosca em SVG
+      const circle = document.getElementById('financeCircle');
+      const offset = CIRCLE_CIRCUMFERENCE - (percent / 100) * CIRCLE_CIRCUMFERENCE;
+      circle.style.strokeDashoffset = offset;
+    }
+
+    // ADICIONAR FUNDOS
+    function addFunds() {
+      const input = document.getElementById('depositInput');
+      const val = parseFloat(input.value);
+
+      if (!isNaN(val) && val > 0) {
+        appData.savedMoney += val;
+        input.value = '';
+        saveData();
+        renderFinance();
+      }
+    }
+
+    // INICIALIZAR
+    loadData();
+  </script>
+</body>
+</html>
