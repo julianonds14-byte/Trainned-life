@@ -441,7 +441,7 @@
     document.addEventListener('touchstart', initAudio, { once: true });
     document.addEventListener('click', initAudio, { once: true });
 
-    function playTone(freq, type, duration, delay = 0, startVol = 0.1) {
+    function playTone(freq, type, duration, delay = 0, vol = 0.3) {
       if (!soundEnabled) return;
       initAudio();
       
@@ -453,7 +453,7 @@
           osc.type = type;
           osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
           
-          gain.gain.setValueAtTime(startVol, audioCtx.currentTime);
+          gain.gain.setValueAtTime(vol, audioCtx.currentTime);
           gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
           
           osc.connect(gain);
@@ -471,17 +471,19 @@
       if (!soundEnabled) return;
       
       if (type === 'check') {
-        // "Pop" sutil e satisfatório
-        playTone(600, 'sine', 0.05, 0, 0.08);
+        // Som de tarefa concluída: Duplo clique bem audível e satisfatório (Tipo Mario Coin/Ding)
+        playTone(987.77, 'sine', 0.08, 0, 0.4);    // B5 (bem audível)
+        playTone(1318.51, 'sine', 0.20, 60, 0.5);  // E6 (agudo satisfatório)
       } else if (type === 'levelup') {
-        // Acorde suave ascendente
-        playTone(523.25, 'sine', 0.12, 0, 0.08);   // C5
-        playTone(659.25, 'sine', 0.12, 70, 0.08);  // E5
-        playTone(783.99, 'sine', 0.18, 140, 0.08); // G5
+        // Fanfarra de Level Up nítida
+        playTone(523.25, 'sine', 0.1, 0, 0.4);   // C5
+        playTone(659.25, 'sine', 0.1, 80, 0.4);  // E5
+        playTone(783.99, 'sine', 0.1, 160, 0.4); // G5
+        playTone(1046.50, 'sine', 0.3, 240, 0.5); // C6
       } else if (type === 'money') {
-        // Barulhinho sutil de moeda tinindo
-        playTone(1800, 'sine', 0.04, 0, 0.05);
-        playTone(2400, 'sine', 0.08, 40, 0.05);
+        // Som estilo PIX PicPay: Notação cristalina e limpa em 2 tempos rápidos
+        playTone(1567.98, 'sine', 0.08, 0, 0.35);  // G6
+        playTone(2093.00, 'sine', 0.25, 60, 0.45);  // C7 (Brilho limpo de moeda PicPay)
       }
     }
 
