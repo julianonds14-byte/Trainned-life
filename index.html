@@ -40,14 +40,14 @@
       flex-direction: column;
       align-items: center;
       position: relative;
-      margin-bottom: 20px;
-      padding-top: 40px; /* Garante espaço para os botões no topo */
+      margin-bottom: 24px;
+      padding-top: 36px;
     }
 
     header h1 {
       font-size: 1.5rem;
       letter-spacing: 1px;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
       text-align: center;
     }
 
@@ -71,8 +71,8 @@
       border: 1px solid var(--card-border);
       color: var(--text);
       border-radius: 10px;
-      padding: 6px 10px;
-      font-size: 0.85rem;
+      padding: 5px 8px;
+      font-size: 0.8rem;
       cursor: pointer;
       white-space: nowrap;
     }
@@ -127,23 +127,20 @@
     .stat-title-group {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
-    .btn-delete-attribute {
-      background-color: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.4);
-      color: var(--accent-red);
-      font-size: 0.75rem;
-      padding: 3px 8px;
-      border-radius: 6px;
+    .btn-trash {
+      background: none;
+      border: none;
       cursor: pointer;
-      transition: all 0.2s;
+      font-size: 0.9rem;
+      opacity: 0.7;
+      padding: 2px 4px;
     }
 
-    .btn-delete-attribute:hover {
-      background-color: var(--accent-red);
-      color: #fff;
+    .btn-trash:hover {
+      opacity: 1;
     }
 
     .stat-bar-bg {
@@ -160,7 +157,7 @@
       transition: width 0.4s ease;
     }
 
-    /* FORMULÁRIOS DE CRIAÇÃO */
+    /* FORMULÁRIOS */
     .add-card {
       background-color: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -297,7 +294,7 @@
       color: var(--accent-blue);
     }
 
-    /* PAINEL FINANCEIRO */
+    /* FINANÇAS - RESUMO SEPARADO */
     .finance-card {
       background-color: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -368,44 +365,42 @@
       gap: 8px;
     }
 
-    .finance-summary {
+    .finance-summary-grid {
       width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 8px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding-top: 12px;
       border-top: 1px solid var(--card-border);
-      font-size: 0.9rem;
     }
 
-    .finance-summary-item {
+    .summary-box {
       display: flex;
       flex-direction: column;
-      gap: 2px;
     }
 
-    .finance-summary-item span {
+    .summary-box.right {
+      text-align: right;
+    }
+
+    .summary-label {
       font-size: 0.75rem;
       color: var(--text-dim);
+      margin-bottom: 2px;
     }
 
-    .finance-summary-item strong {
+    .summary-value {
       font-size: 1rem;
+      font-weight: bold;
       color: var(--text);
     }
 
     .edit-goal-btn {
       background: none;
       border: none;
-      color: var(--accent-blue);
       cursor: pointer;
-      font-size: 0.85rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-
-    .edit-goal-btn:hover {
-      background-color: rgba(59, 130, 246, 0.1);
+      font-size: 0.75rem;
+      margin-left: 2px;
     }
 
     button {
@@ -435,7 +430,7 @@
       opacity: 0.9;
     }
 
-    /* BANNER DE ATIVAÇÃO VIP */
+    /* BANNER VIP */
     .vip-banner {
       background: linear-gradient(135deg, #2b1f0d, #1a1d26);
       border: 1px solid var(--accent-yellow);
@@ -458,7 +453,7 @@
       color: var(--text-dim);
     }
 
-    /* MODAL DE CONFIRMAÇÃO PARA EXCLUIR ATRIBUTO */
+    /* MODAL DE CONFIRMAÇÃO */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -484,7 +479,6 @@
       display: flex;
       flex-direction: column;
       gap: 14px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
 
     .modal-title {
@@ -522,21 +516,21 @@
 
   <header>
     <div class="header-btns">
-      <button class="vip-badge-btn" id="vipStatusBtn" onclick="promptVipCode()">🔑 Ativar VIP</button>
+      <button class="vip-badge-btn" id="vipStatusBtn" onclick="promptVipCode()">🔑 VIP</button>
       <button class="sound-toggle-btn" id="soundBtn" onclick="toggleSound()">🔊</button>
     </div>
     <h1>🎮 LIFE RPG</h1>
     <p>Evolua na vida real</p>
   </header>
 
-  <!-- SEÇÃO DE ATRIBUTOS -->
+  <!-- ATRIBUTOS -->
   <div class="section-title">
     <span>⚡ Atributos & Níveis</span>
     <span class="limit-badge" id="statLimitText"></span>
   </div>
   <div class="stats-card" id="statsContainer"></div>
 
-  <!-- CRIAR NOVO ATRIBUTO -->
+  <!-- NOVO ATRIBUTO -->
   <div class="add-card">
     <div class="form-row">
       <input type="text" id="newStatName" class="input-field" placeholder="Novo Atributo (ex: Foco)">
@@ -545,13 +539,12 @@
     </div>
   </div>
 
-  <!-- SEÇÃO DE TAREFAS DIÁRIAS -->
+  <!-- HÁBITOS -->
   <div class="section-title">
     <span>✅ Hábitos Diários</span>
     <span class="limit-badge" id="taskLimitText"></span>
   </div>
 
-  <!-- ADICIONAR NOVA TAREFA -->
   <div class="add-card">
     <input type="text" id="newTaskTitle" class="input-field" placeholder="Ex: Meditar 10 minutos">
     <div class="form-row">
@@ -564,7 +557,7 @@
   <div class="tasks-list" id="tasksContainer"></div>
   <button class="reset-day-btn" onclick="resetDayManually()">🔄 Renovar Hábitos do Dia</button>
 
-  <!-- SEÇÃO FINANÇAS -->
+  <!-- FINANÇAS -->
   <div class="section-title">💰 Meta Financeira</div>
   <div class="finance-card">
     <div class="chart-container">
@@ -586,34 +579,34 @@
       </div>
     </div>
 
-    <div class="finance-summary">
-      <div class="finance-summary-item">
-        <span>Guardado</span>
-        <strong id="savedAmount">R$ 0</strong>
+    <div class="finance-summary-grid">
+      <div class="summary-box">
+        <span class="summary-label">Guardado:</span>
+        <span class="summary-value" id="savedAmount">R$ 0</span>
       </div>
-      <div class="finance-summary-item" style="text-align: right;">
-        <span>Meta <button class="edit-goal-btn" onclick="changeGoalAmount()" title="Alterar Valor da Meta">✏️ Editar</button></span>
-        <strong id="goalAmountText">R$ 30.000</strong>
+      <div class="summary-box right">
+        <span class="summary-label">Meta: <button class="edit-goal-btn" onclick="changeGoalAmount()" title="Alterar Meta">✏️</button></span>
+        <span class="summary-value" id="goalAmountText">R$ 30.000</span>
       </div>
     </div>
   </div>
 
-  <!-- BANNER PROMOÇÃO VIP -->
+  <!-- BANNER VIP -->
   <div class="vip-banner" id="vipBanner">
     <h3>👑 Desbloqueie o Life RPG VIP</h3>
-    <p>Tenha atributos e hábitos ilimitados para transformar a sua rotina!</p>
-    <button style="background: var(--accent-yellow); color: #000;" onclick="promptVipCode()">Inserir Código de Ativação</button>
+    <p>Tenha atributos e hábitos ilimitados!</p>
+    <button style="background: var(--accent-yellow); color: #000;" onclick="promptVipCode()">Inserir Código VIP</button>
   </div>
 
-  <!-- MODAL DE CONFIRMAÇÃO PARA EXCLUIR ATRIBUTO -->
+  <!-- MODAL DE CONFIRMAÇÃO DA LIXEIRA -->
   <div class="modal-overlay" id="deleteStatModal">
     <div class="modal-card">
       <div class="modal-title">⚠️ Excluir Atributo</div>
       <div class="modal-body">
-        Esta ação apagará permanentemente o atributo <strong id="deleteStatNameTarget" style="color:#fff"></strong> e todas as tarefas ligadas a ele.<br><br>
-        Digite a palavra <strong style="color: var(--accent-red)">DELETE</strong> para confirmar:
+        Deseja apagar o atributo <strong id="deleteStatNameTarget" style="color:#fff"></strong> e todas as suas tarefas?<br><br>
+        Digite <strong style="color: var(--accent-red)">DELETE</strong> para confirmar:
       </div>
-      <input type="text" id="deleteConfirmInput" class="input-field" placeholder="Digite DELETE aqui" oninput="validateDeleteInput()">
+      <input type="text" id="deleteConfirmInput" class="input-field" placeholder="Digite DELETE" oninput="validateDeleteInput()">
       <div class="modal-actions">
         <button class="btn-secondary" onclick="closeDeleteModal()">Cancelar</button>
         <button id="confirmDeleteStatBtn" class="btn-danger" disabled onclick="executeDeleteStat()">Excluir</button>
@@ -652,27 +645,20 @@
         try {
           const osc = audioCtx.createOscillator();
           const gain = audioCtx.createGain();
-          
           osc.type = type;
           osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-          
           gain.gain.setValueAtTime(vol, audioCtx.currentTime);
           gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-          
           osc.connect(gain);
           gain.connect(audioCtx.destination);
-          
           osc.start();
           osc.stop(audioCtx.currentTime + duration);
-        } catch(e) {
-          console.log(e);
-        }
+        } catch(e){}
       }, delay);
     }
 
     function playSound(type) {
       if (!soundEnabled) return;
-      
       if (type === 'check') {
         playTone(987.77, 'sine', 0.08, 0, 0.4);
         playTone(1318.51, 'sine', 0.20, 60, 0.5);
@@ -721,7 +707,7 @@
     }
 
     function resetDayManually() {
-      if (confirm("Deseja desmarcar todas as tarefas para um novo dia?")) {
+      if (confirm("Deseja renovar todos os hábitos para o dia de hoje?")) {
         appData.tasks.forEach(t => t.completed = false);
         appData.lastDate = new Date().toDateString();
         saveData();
@@ -744,7 +730,7 @@
         appData.isVip = true;
         saveData();
         playSound('levelup');
-        alert("🎉 PARABÉNS! Versão VIP Ativada com sucesso!");
+        alert("🎉 PARABÉNS! Versão VIP Ativada!");
         updateVipUI();
         renderStats();
         renderTasks();
@@ -762,7 +748,7 @@
         vipBtn.classList.add('active');
         vipBanner.style.display = 'none';
       } else {
-        vipBtn.innerText = '🔑 Ativar VIP';
+        vipBtn.innerText = '🔑 VIP';
         vipBtn.classList.remove('active');
         vipBanner.style.display = 'flex';
       }
@@ -829,7 +815,7 @@
             <div class="stat-header">
               <div class="stat-title-group">
                 <span>${stat.name} (Nível ${stat.level})</span>
-                <button class="btn-delete-attribute" onclick="openDeleteModal('${key}')">Excluir</button>
+                <button class="btn-trash" onclick="openDeleteModal('${key}')" title="Excluir atributo">🗑️</button>
               </div>
               <span>${stat.xp} / ${nextXp} XP</span>
             </div>
@@ -860,12 +846,7 @@
     function validateDeleteInput() {
       const inputVal = document.getElementById('deleteConfirmInput').value.trim();
       const btn = document.getElementById('confirmDeleteStatBtn');
-      
-      if (inputVal === 'DELETE') {
-        btn.disabled = false;
-      } else {
-        btn.disabled = true;
-      }
+      btn.disabled = (inputVal !== 'DELETE');
     }
 
     function executeDeleteStat() {
