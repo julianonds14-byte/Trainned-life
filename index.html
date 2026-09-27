@@ -98,7 +98,6 @@
       font-weight: normal;
     }
 
-    /* CARD DE ATRIBUTOS */
     .stats-card {
       background-color: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -157,7 +156,6 @@
       transition: width 0.4s ease;
     }
 
-    /* FORMULÁRIOS */
     .add-card {
       background-color: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -195,7 +193,6 @@
       cursor: pointer;
     }
 
-    /* TAREFAS DIÁRIAS */
     .tasks-list {
       display: flex;
       flex-direction: column;
@@ -294,7 +291,6 @@
       color: var(--accent-blue);
     }
 
-    /* FINANÇAS */
     .finance-card {
       background-color: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -430,7 +426,6 @@
       opacity: 0.9;
     }
 
-    /* BANNER VIP */
     .vip-banner {
       background: linear-gradient(135deg, #2b1f0d, #1a1d26);
       border: 1px solid var(--accent-yellow);
@@ -453,7 +448,6 @@
       color: var(--text-dim);
     }
 
-    /* MODAL DE CONFIRMAÇÃO */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -523,14 +517,12 @@
     <p>Evolua na vida real</p>
   </header>
 
-  <!-- ATRIBUTOS -->
   <div class="section-title">
     <span>⚡ Atributos & Níveis</span>
     <span class="limit-badge" id="statLimitText"></span>
   </div>
   <div class="stats-card" id="statsContainer"></div>
 
-  <!-- NOVO ATRIBUTO -->
   <div class="add-card">
     <div class="form-row">
       <input type="text" id="newStatName" class="input-field" placeholder="Novo Atributo (ex: Foco)">
@@ -539,7 +531,6 @@
     </div>
   </div>
 
-  <!-- HÁBITOS -->
   <div class="section-title">
     <span>✅ Hábitos Diários</span>
     <span class="limit-badge" id="taskLimitText"></span>
@@ -557,7 +548,6 @@
   <div class="tasks-list" id="tasksContainer"></div>
   <button class="reset-day-btn" onclick="resetDayManually()">🔄 Renovar Hábitos do Dia</button>
 
-  <!-- FINANÇAS -->
   <div class="section-title">💰 Meta Financeira</div>
   <div class="finance-card">
     <div class="chart-container">
@@ -591,14 +581,12 @@
     </div>
   </div>
 
-  <!-- BANNER VIP -->
   <div class="vip-banner" id="vipBanner">
     <h3>👑 Desbloqueie o Life RPG VIP</h3>
     <p>Use um código VIP para liberar recursos ilimitados!</p>
     <button style="background: var(--accent-yellow); color: #000;" onclick="promptVipCode()">Inserir Código VIP</button>
   </div>
 
-  <!-- MODAL DE CONFIRMAÇÃO DA LIXEIRA -->
   <div class="modal-overlay" id="deleteStatModal">
     <div class="modal-card">
       <div class="modal-title">⚠️ Excluir Atributo</div>
@@ -617,12 +605,19 @@
   <script>
     const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 70;
 
-    // CÓDIGOS OFICIAIS VIP
     const VIP_CODES = {
       "VIPTEST10": 1 * 60 * 1000,                  // 1 Minuto
       "VIPMENSAL3030": 30 * 24 * 60 * 60 * 1000,   // 30 Dias
       "VIPANUAL365DIAS10": 365 * 24 * 60 * 60 * 1000 // 365 Dias
     };
+
+    const VIP_STATS_KEYS = ['carisma', 'disciplina', 'foco'];
+    const VIP_TASKS_TITLES = [
+      '💧 Beber 3L de Água',
+      '🗣️ Treinar Oratória / Socializar',
+      '🎯 Cumprir Rotina sem Procrastinar',
+      '🥶 Tomar banho gelado'
+    ];
 
     const FREE_STAT_LIMIT = 3;
     const FREE_TASK_LIMIT = 5;
@@ -722,9 +717,7 @@
       }
     }
 
-    // INJETA OS ATRIBUTOS E TAREFAS EXTRAS DO PACOTE VIP
     function injectVipPreset() {
-      // 1. Injeta os Atributos: Carisma, Disciplina e Foco (se ainda não existirem)
       const vipStats = [
         { key: 'carisma', name: 'Carisma', color: '#a855f7' },
         { key: 'disciplina', name: 'Disciplina', color: '#ef4444' },
@@ -742,7 +735,6 @@
         }
       });
 
-      // 2. Injeta os Hábitos da imagem
       const vipTasks = [
         { title: '💧 Beber 3L de Água', stat: 'saude', xpReward: 15 },
         { title: '🗣️ Treinar Oratória / Socializar', stat: 'carisma', xpReward: 20 },
@@ -764,7 +756,21 @@
       });
     }
 
-    // MONITOR DE EXPIRAÇÃO VIP
+    // REMOVE ATRIBUTOS E TAREFAS VIP AO EXPIRAR
+    function removeVipPreset() {
+      // Remove as tarefas criadas pelo VIP
+      appData.tasks = appData.tasks.filter(task => {
+        const isVipTitle = VIP_TASKS_TITLES.some(vt => vt.toLowerCase() === task.title.toLowerCase());
+        const isVipStatTask = VIP_STATS_KEYS.includes(task.stat);
+        return !isVipTitle && !isVipStatTask;
+      });
+
+      // Remove os atributos VIP
+      VIP_STATS_KEYS.forEach(key => {
+        delete appData.stats[key];
+      });
+    }
+
     function checkVipTimer() {
       if (!appData.isVip || !appData.vipExpiresAt) return;
 
@@ -774,11 +780,15 @@
       if (timeLeftMs <= 0) {
         appData.isVip = false;
         appData.vipExpiresAt = null;
+        
+        removeVipPreset();
+
         saveData();
         updateVipUI();
         renderStats();
+        renderStatSelectOptions();
         renderTasks();
-        alert("⏰ Seu período VIP expirou! O aplicativo voltou para o plano Grátis.");
+        alert("⏰ Seu período VIP expirou! O aplicativo voltou para o plano Grátis e os recursos VIP extras foram removidos.");
       } else {
         const vipBtn = document.getElementById('vipStatusBtn');
         if (vipBtn) {
@@ -808,10 +818,14 @@
         if (disable) {
           appData.isVip = false;
           appData.vipExpiresAt = null;
+          
+          removeVipPreset();
+
           saveData();
           alert("Status VIP cancelado!");
           updateVipUI();
           renderStats();
+          renderStatSelectOptions();
           renderTasks();
         }
         return;
@@ -828,18 +842,17 @@
         appData.isVip = true;
         appData.vipExpiresAt = Date.now() + durationMs;
         
-        // Ativação automática dos atributos e tarefas VIP
         injectVipPreset();
 
         saveData();
         playSound('levelup');
 
         if (cleanCode === 'VIPTEST10') {
-          alert("🎉 VIP de Teste ativado por 1 MINUTO! Atributos e Hábitos adicionados.");
+          alert("🎉 VIP de Teste ativado por 1 MINUTO!");
         } else if (cleanCode === 'VIPMENSAL3030') {
-          alert("🎉 VIP Mensal ativado por 30 DIAS! Atributos e Hábitos adicionados.");
+          alert("🎉 VIP Mensal ativado por 30 DIAS!");
         } else if (cleanCode === 'VIPANUAL365DIAS10') {
-          alert("🎉 VIP Anual ativado por 365 DIAS! Atributos e Hábitos adicionados.");
+          alert("🎉 VIP Anual ativado por 365 DIAS!");
         }
 
         updateVipUI();
