@@ -1,1203 +1,425 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Life RPG & Finanças</title>
-  <style>
-    :root {
-      --bg: #0f1117;
-      --card-bg: #1a1d26;
-      --card-border: #2a2e3d;
-      --text: #f0f2f8;
-      --text-dim: #8b92a5;
-      --accent-green: #22c55e;
-      --accent-blue: #3b82f6;
-      --accent-purple: #a855f7;
-      --accent-orange: #f97316;
-      --accent-yellow: #eab308;
-      --accent-red: #ef4444;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      padding: 16px;
-      max-width: 480px;
-      margin: 0 auto;
-      padding-bottom: 80px;
-    }
-
-    header {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
-      margin-bottom: 24px;
-      padding-top: 36px;
-    }
-
-    header h1 {
-      font-size: 1.5rem;
-      letter-spacing: 1px;
-      margin-bottom: 2px;
-      text-align: center;
-    }
-
-    header p {
-      color: var(--text-dim);
-      font-size: 0.85rem;
-      text-align: center;
-    }
-
-    .header-btns {
-      position: absolute;
-      top: 0;
-      right: 0;
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .sound-toggle-btn, .vip-badge-btn {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      color: var(--text);
-      border-radius: 10px;
-      padding: 5px 8px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    .vip-badge-btn.active {
-      border-color: var(--accent-yellow);
-      color: var(--accent-yellow);
-      font-weight: bold;
-    }
-
-    .section-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin: 20px 0 12px 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .limit-badge {
-      font-size: 0.75rem;
-      color: var(--accent-yellow);
-      font-weight: normal;
-    }
-
-    .stats-card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .stat-row {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .stat-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.9rem;
-      font-weight: 600;
-    }
-
-    .stat-title-group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .btn-trash {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 0.9rem;
-      opacity: 0.7;
-      padding: 2px 4px;
-    }
-
-    .btn-trash:hover {
-      opacity: 1;
-    }
-
-    .stat-bar-bg {
-      height: 8px;
-      background-color: #262a36;
-      border-radius: 4px;
-      overflow: hidden;
-    }
-
-    .stat-bar-fill {
-      height: 100%;
-      width: 0%;
-      border-radius: 4px;
-      transition: width 0.4s ease;
-    }
-
-    .add-card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-
-    .input-field, select {
-      width: 100%;
-      background-color: var(--bg);
-      border: 1px solid var(--card-border);
-      color: var(--text);
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      outline: none;
-    }
-
-    .form-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    input[type="color"] {
-      width: 44px;
-      height: 42px;
-      padding: 2px;
-      background: var(--bg);
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .tasks-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .task-item {
-      background-color: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      transition: all 0.2s;
-    }
-
-    .task-item.completed {
-      opacity: 0.5;
-    }
-
-    .task-item.completed .task-title {
-      text-decoration: line-through;
-    }
-
-    .task-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex: 1;
-      cursor: pointer;
-    }
-
-    .checkbox {
-      width: 22px;
-      height: 22px;
-      border-radius: 6px;
-      border: 2px solid var(--text-dim);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 0.8rem;
-    }
-
-    .task-item.completed .checkbox {
-      background-color: var(--accent-green);
-      border-color: var(--accent-green);
-      color: #000;
-    }
-
-    .task-info {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .task-title {
-      font-size: 0.95rem;
-      font-weight: 600;
-    }
-
-    .task-reward {
-      font-size: 0.75rem;
-      color: var(--text-dim);
-    }
-
-    .delete-btn {
-      background: none;
-      border: none;
-      color: var(--text-dim);
-      font-size: 1.1rem;
-      cursor: pointer;
-      padding: 4px 8px;
-      border-radius: 6px;
-    }
-
-    .delete-btn:hover {
-      color: var(--accent-red);
-    }
-
-    .reset-day-btn {
-      width: 100%;
-      margin-top: 12px;
-      background-color: transparent;
-      border: 1px dashed var(--card-border);
-      color: var(--text-dim);
-      padding: 10px;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .reset-day-btn:hover {
-      border-color: var(--accent-blue);
-      color: var(--accent-blue);
-    }
-
-    .finance-card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .chart-container {
-      position: relative;
-      width: 160px;
-      height: 160px;
-    }
-
-    .chart-container svg {
-      transform: rotate(-90deg);
-      width: 100%;
-      height: 100%;
-    }
-
-    .chart-bg {
-      fill: none;
-      stroke: #262a36;
-      stroke-width: 12;
-    }
-
-    .chart-progress {
-      fill: none;
-      stroke: var(--accent-green);
-      stroke-width: 12;
-      stroke-dasharray: 440;
-      stroke-dashoffset: 440;
-      stroke-linecap: round;
-      transition: stroke-dashoffset 0.6s ease;
-    }
-
-    .chart-text {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-    }
-
-    .chart-percent {
-      font-size: 1.6rem;
-      font-weight: 800;
-      color: var(--accent-green);
-    }
-
-    .chart-subtitle {
-      font-size: 0.7rem;
-      color: var(--text-dim);
-    }
-
-    .finance-inputs {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .input-group {
-      display: flex;
-      gap: 8px;
-    }
-
-    .finance-summary-grid {
-      width: 100%;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      padding-top: 12px;
-      border-top: 1px solid var(--card-border);
-    }
-
-    .summary-box {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .summary-box.right {
-      text-align: right;
-    }
-
-    .summary-label {
-      font-size: 0.75rem;
-      color: var(--text-dim);
-      margin-bottom: 2px;
-    }
-
-    .summary-value {
-      font-size: 1rem;
-      font-weight: bold;
-      color: var(--text);
-    }
-
-    .edit-goal-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 0.75rem;
-      margin-left: 2px;
-    }
-
-    button {
-      background-color: var(--accent-green);
-      color: #000;
-      border: none;
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-
-    button:disabled {
-      background-color: #333a4d !important;
-      color: #717b94 !important;
-      cursor: not-allowed;
-    }
-
-    button.btn-withdraw {
-      background-color: #311c22;
-      color: var(--accent-red);
-      border: 1px solid #52232a;
-    }
-
-    button:hover:not(:disabled) {
-      opacity: 0.9;
-    }
-
-    .vip-banner {
-      background: linear-gradient(135deg, #2b1f0d, #1a1d26);
-      border: 1px solid var(--accent-yellow);
-      border-radius: 16px;
-      padding: 16px;
-      margin-top: 24px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .vip-banner h3 {
-      color: var(--accent-yellow);
-      font-size: 1.1rem;
-    }
-
-    .vip-banner p {
-      font-size: 0.85rem;
-      color: var(--text-dim);
-    }
-
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(5px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      padding: 16px;
-    }
-
-    .modal-card {
-      background-color: var(--card-bg);
-      border: 2px solid var(--accent-red);
-      border-radius: 16px;
-      padding: 20px;
-      max-width: 400px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .modal-title {
-      font-size: 1.1rem;
-      color: var(--accent-red);
-      font-weight: bold;
-    }
-
-    .modal-body {
-      font-size: 0.85rem;
-      color: var(--text-dim);
-      line-height: 1.4;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 8px;
-      justify-content: flex-end;
-      margin-top: 6px;
-    }
-
-    .btn-danger {
-      background-color: var(--accent-red);
-      color: #fff;
-    }
-
-    .btn-secondary {
-      background-color: transparent;
-      border: 1px solid var(--card-border);
-      color: var(--text-dim);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life RPG - Dark Edition</title>
+    <!-- SDK Oficial do Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-color: #f97316;
+            --text-color: #f8fafc;
+            --text-secondary: #94a3b8;
+            --vip-color: #eab308;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Ecrã de Autenticação */
+        #auth-container {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .toggle-auth {
+            color: var(--text-secondary);
+            margin-top: 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* Interface Principal */
+        #app-container {
+            display: none;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 15px;
+        }
+
+        .vip-badge {
+            background: linear-gradient(45deg, #eab308, #ca8a04);
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            display: none;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stat-item {
+            margin-bottom: 15px;
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #334155;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #334155;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .task-item.completed {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+
+        .task-btn {
+            background-color: var(--accent-color);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .vip-section {
+            border: 1px solid var(--vip-color);
+            background: rgba(234, 179, 8, 0.05);
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 
-  <header>
-    <div class="header-btns">
-      <button class="vip-badge-btn" id="vipStatusBtn" onclick="promptVipCode()">🔑 VIP</button>
-      <button class="sound-toggle-btn" id="soundBtn" onclick="toggleSound()">🔊</button>
-    </div>
-    <h1>🎮 LIFE RPG</h1>
-    <p>Evolua na vida real</p>
-  </header>
-
-  <div class="section-title">
-    <span>⚡ Atributos & Níveis</span>
-    <span class="limit-badge" id="statLimitText"></span>
-  </div>
-  <div class="stats-card" id="statsContainer"></div>
-
-  <div class="add-card">
-    <div class="form-row">
-      <input type="text" id="newStatName" class="input-field" placeholder="Novo Atributo (ex: Foco)">
-      <input type="color" id="newStatColor" value="#3b82f6" title="Escolha uma cor">
-      <button id="addStatBtn" onclick="addNewStat()">+ Atributo</button>
-    </div>
-  </div>
-
-  <div class="section-title">
-    <span>✅ Hábitos Diários</span>
-    <span class="limit-badge" id="taskLimitText"></span>
-  </div>
-
-  <div class="add-card">
-    <input type="text" id="newTaskTitle" class="input-field" placeholder="Ex: Meditar 10 minutos">
-    <div class="form-row">
-      <select id="newTaskStat"></select>
-      <input type="number" id="newTaskXp" class="input-field" placeholder="XP" value="20" min="5" max="100" style="width: 80px;">
-      <button id="addTaskBtn" onclick="addNewTask()">+ Criar</button>
-    </div>
-  </div>
-
-  <div class="tasks-list" id="tasksContainer"></div>
-  <button class="reset-day-btn" onclick="resetDayManually()">🔄 Renovar Hábitos do Dia</button>
-
-  <div class="section-title">💰 Meta Financeira</div>
-  <div class="finance-card">
-    <div class="chart-container">
-      <svg viewBox="0 0 160 160">
-        <circle class="chart-bg" cx="80" cy="80" r="70"></circle>
-        <circle class="chart-progress" id="financeCircle" cx="80" cy="80" r="70"></circle>
-      </svg>
-      <div class="chart-text">
-        <div class="chart-percent" id="financePercent">0%</div>
-        <div class="chart-subtitle">Concluído</div>
-      </div>
+    <!-- TELA DE AUTENTICAÇÃO -->
+    <div id="auth-container">
+        <h2 id="auth-title">Life RPG - Login</h2>
+        <input type="email" id="auth-email" class="auth-input" placeholder="Seu e-mail">
+        <input type="password" id="auth-password" class="auth-input" placeholder="Sua palavra-passe">
+        <button id="auth-submit-btn" class="auth-btn" onclick="handleAuth()">Entrar</button>
+        <p class="toggle-auth" id="auth-toggle-text" onclick="toggleAuthMode()">Não tem conta? Registe-se aqui</p>
     </div>
 
-    <div class="finance-inputs">
-      <div class="input-group">
-        <input type="number" id="depositInput" class="input-field" placeholder="Valor (R$)" min="0" step="10">
-        <button onclick="addFunds()">+ Guardar</button>
-        <button class="btn-withdraw" onclick="withdrawFunds()">- Retirar</button>
-      </div>
-    </div>
-
-    <div class="finance-summary-grid">
-      <div class="summary-box">
-        <span class="summary-label">Guardado:</span>
-        <span class="summary-value" id="savedAmount">R$ 0</span>
-      </div>
-      <div class="summary-box right">
-        <span class="summary-label">Meta: <button class="edit-goal-btn" onclick="changeGoalAmount()" title="Alterar Meta">✏️</button></span>
-        <span class="summary-value" id="goalAmountText">R$ 30.000</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="vip-banner" id="vipBanner">
-    <h3>👑 Desbloqueie o Life RPG VIP</h3>
-    <p>Use um código VIP para liberar recursos ilimitados!</p>
-    <button style="background: var(--accent-yellow); color: #000;" onclick="promptVipCode()">Inserir Código VIP</button>
-  </div>
-
-  <div class="modal-overlay" id="deleteStatModal">
-    <div class="modal-card">
-      <div class="modal-title">⚠️ Excluir Atributo</div>
-      <div class="modal-body">
-        Deseja apagar o atributo <strong id="deleteStatNameTarget" style="color:#fff"></strong> e todas as suas tarefas?<br><br>
-        Digite <strong style="color: var(--accent-red)">DELETE</strong> para confirmar:
-      </div>
-      <input type="text" id="deleteConfirmInput" class="input-field" placeholder="Digite DELETE" oninput="validateDeleteInput()">
-      <div class="modal-actions">
-        <button class="btn-secondary" onclick="closeDeleteModal()">Cancelar</button>
-        <button id="confirmDeleteStatBtn" class="btn-danger" disabled onclick="executeDeleteStat()">Excluir</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 70;
-
-    const VIP_CODES = {
-      "VIPTEST10": 1 * 60 * 1000,                  // 1 Minuto
-      "VIPMENSAL3030": 30 * 24 * 60 * 60 * 1000,   // 30 Dias
-      "VIPANUAL365DIAS10": 365 * 24 * 60 * 60 * 1000 // 365 Dias
-    };
-
-    const VIP_STATS_KEYS = ['carisma', 'disciplina', 'foco'];
-    const VIP_TASKS_TITLES = [
-      '💧 Beber 3L de Água',
-      '🗣️ Treinar Oratória / Socializar',
-      '🎯 Cumprir Rotina sem Procrastinar',
-      '🥶 Tomar banho gelado'
-    ];
-
-    const FREE_STAT_LIMIT = 3;
-    const FREE_TASK_LIMIT = 5;
-
-    let soundEnabled = true;
-    let audioCtx = null;
-    let statKeyToDelete = null;
-
-    function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-    }
-
-    document.addEventListener('touchstart', initAudio, { once: true });
-    document.addEventListener('click', initAudio, { once: true });
-
-    function playTone(freq, type, duration, delay = 0, vol = 0.3) {
-      if (!soundEnabled) return;
-      initAudio();
-      
-      setTimeout(() => {
-        try {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.type = type;
-          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-          gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start();
-          osc.stop(audioCtx.currentTime + duration);
-        } catch(e){}
-      }, delay);
-    }
-
-    function playSound(type) {
-      if (!soundEnabled) return;
-      if (type === 'check') {
-        playTone(987.77, 'sine', 0.08, 0, 0.4);
-        playTone(1318.51, 'sine', 0.20, 60, 0.5);
-      } else if (type === 'levelup') {
-        playTone(523.25, 'sine', 0.1, 0, 0.4);
-        playTone(659.25, 'sine', 0.1, 80, 0.4);
-        playTone(783.99, 'sine', 0.1, 160, 0.4);
-        playTone(1046.50, 'sine', 0.3, 240, 0.5);
-      } else if (type === 'money') {
-        playTone(1567.98, 'sine', 0.08, 0, 0.35);
-        playTone(2093.00, 'sine', 0.25, 60, 0.45);
-      }
-    }
-
-    function toggleSound() {
-      soundEnabled = !soundEnabled;
-      document.getElementById('soundBtn').innerText = soundEnabled ? '🔊' : '🔇';
-      localStorage.setItem('lifeRpgSound', JSON.stringify(soundEnabled));
-      if (soundEnabled) playSound('check');
-    }
-
-    let appData = {
-      isVip: false,
-      vipExpiresAt: null,
-      savedMoney: 0,
-      goalMoney: 30000,
-      lastDate: new Date().toDateString(),
-      stats: {
-        forca: { name: 'Força', level: 1, xp: 0, color: '#f97316' },
-        inteligencia: { name: 'Inteligência', level: 1, xp: 0, color: '#3b82f6' },
-        saude: { name: 'Saúde', level: 1, xp: 0, color: '#22c55e' }
-      },
-      tasks: [
-        { id: 1, title: '💪 Treinar', stat: 'forca', xpReward: 25, completed: false },
-        { id: 2, title: '💊 Tomar Creatina', stat: 'saude', xpReward: 15, completed: false },
-        { id: 3, title: '📚 Ler 10 páginas', stat: 'inteligencia', xpReward: 20, completed: false }
-      ]
-    };
-
-    function checkDailyReset() {
-      const today = new Date().toDateString();
-      if (appData.lastDate !== today) {
-        appData.tasks.forEach(t => t.completed = false);
-        appData.lastDate = today;
-        saveData();
-      }
-    }
-
-    function resetDayManually() {
-      if (confirm("Deseja renovar todos os hábitos para o dia de hoje?")) {
-        appData.tasks.forEach(t => t.completed = false);
-        appData.lastDate = new Date().toDateString();
-        saveData();
-        renderTasks();
-      }
-    }
-
-    function injectVipPreset() {
-      const vipStats = [
-        { key: 'carisma', name: 'Carisma', color: '#a855f7' },
-        { key: 'disciplina', name: 'Disciplina', color: '#ef4444' },
-        { key: 'foco', name: 'Foco', color: '#eab308' }
-      ];
-
-      vipStats.forEach(st => {
-        if (!appData.stats[st.key]) {
-          appData.stats[st.key] = {
-            name: st.name,
-            level: 1,
-            xp: 0,
-            color: st.color
-          };
-        }
-      });
-
-      const vipTasks = [
-        { title: '💧 Beber 3L de Água', stat: 'saude', xpReward: 15 },
-        { title: '🗣️ Treinar Oratória / Socializar', stat: 'carisma', xpReward: 20 },
-        { title: '🎯 Cumprir Rotina sem Procrastinar', stat: 'disciplina', xpReward: 30 },
-        { title: '🥶 Tomar banho gelado', stat: 'disciplina', xpReward: 20 }
-      ];
-
-      vipTasks.forEach(vt => {
-        const alreadyExists = appData.tasks.some(t => t.title.toLowerCase() === vt.title.toLowerCase());
-        if (!alreadyExists) {
-          appData.tasks.push({
-            id: Date.now() + Math.random(),
-            title: vt.title,
-            stat: vt.stat,
-            xpReward: vt.xpReward,
-            completed: false
-          });
-        }
-      });
-    }
-
-    // REMOVE ATRIBUTOS E TAREFAS VIP AO EXPIRAR
-    function removeVipPreset() {
-      // Remove as tarefas criadas pelo VIP
-      appData.tasks = appData.tasks.filter(task => {
-        const isVipTitle = VIP_TASKS_TITLES.some(vt => vt.toLowerCase() === task.title.toLowerCase());
-        const isVipStatTask = VIP_STATS_KEYS.includes(task.stat);
-        return !isVipTitle && !isVipStatTask;
-      });
-
-      // Remove os atributos VIP
-      VIP_STATS_KEYS.forEach(key => {
-        delete appData.stats[key];
-      });
-    }
-
-    function checkVipTimer() {
-      if (!appData.isVip || !appData.vipExpiresAt) return;
-
-      const now = Date.now();
-      const timeLeftMs = appData.vipExpiresAt - now;
-
-      if (timeLeftMs <= 0) {
-        appData.isVip = false;
-        appData.vipExpiresAt = null;
-        
-        removeVipPreset();
-
-        saveData();
-        updateVipUI();
-        renderStats();
-        renderStatSelectOptions();
-        renderTasks();
-        alert("⏰ Seu período VIP expirou! O aplicativo voltou para o plano Grátis e os recursos VIP extras foram removidos.");
-      } else {
-        const vipBtn = document.getElementById('vipStatusBtn');
-        if (vipBtn) {
-          const totalSecs = Math.ceil(timeLeftMs / 1000);
-          
-          if (totalSecs <= 120) {
-            vipBtn.innerText = `👑 VIP (${totalSecs}s)`;
-          } else {
-            const days = Math.floor(totalSecs / (24 * 3600));
-            const hours = Math.floor((totalSecs % (24 * 3600)) / 3600);
-            if (days > 0) {
-              vipBtn.innerText = `👑 VIP (${days}d ${hours}h)`;
-            } else {
-              const mins = Math.floor((totalSecs % 3600) / 60);
-              vipBtn.innerText = `👑 VIP (${mins}m)`;
-            }
-          }
-        }
-      }
-    }
-
-    setInterval(checkVipTimer, 1000);
-
-    function promptVipCode() {
-      if (appData.isVip) {
-        const disable = confirm("Sua assinatura VIP está ativa. Deseja cancelar agora?");
-        if (disable) {
-          appData.isVip = false;
-          appData.vipExpiresAt = null;
-          
-          removeVipPreset();
-
-          saveData();
-          alert("Status VIP cancelado!");
-          updateVipUI();
-          renderStats();
-          renderStatSelectOptions();
-          renderTasks();
-        }
-        return;
-      }
-
-      const inputCode = prompt("Digite o código de acesso VIP:");
-      if (!inputCode) return;
-
-      const cleanCode = inputCode.trim().toUpperCase();
-
-      if (VIP_CODES[cleanCode]) {
-        const durationMs = VIP_CODES[cleanCode];
-        
-        appData.isVip = true;
-        appData.vipExpiresAt = Date.now() + durationMs;
-        
-        injectVipPreset();
-
-        saveData();
-        playSound('levelup');
-
-        if (cleanCode === 'VIPTEST10') {
-          alert("🎉 VIP de Teste ativado por 1 MINUTO!");
-        } else if (cleanCode === 'VIPMENSAL3030') {
-          alert("🎉 VIP Mensal ativado por 30 DIAS!");
-        } else if (cleanCode === 'VIPANUAL365DIAS10') {
-          alert("🎉 VIP Anual ativado por 365 DIAS!");
-        }
-
-        updateVipUI();
-        renderStats();
-        renderStatSelectOptions();
-        renderTasks();
-      } else {
-        alert("❌ Código inválido!");
-      }
-    }
-
-    function updateVipUI() {
-      const vipBtn = document.getElementById('vipStatusBtn');
-      const vipBanner = document.getElementById('vipBanner');
-
-      if (appData.isVip) {
-        vipBtn.classList.add('active');
-        vipBanner.style.display = 'none';
-        checkVipTimer();
-      } else {
-        vipBtn.innerText = '🔑 VIP';
-        vipBtn.classList.remove('active');
-        vipBanner.style.display = 'flex';
-      }
-    }
-
-    function loadData() {
-      const saved = localStorage.getItem('lifeRpgData');
-      if (saved) {
-        appData = JSON.parse(saved);
-        if (!appData.goalMoney) appData.goalMoney = 30000;
-      }
-      const savedSound = localStorage.getItem('lifeRpgSound');
-      if (savedSound !== null) {
-        soundEnabled = JSON.parse(savedSound);
-        document.getElementById('soundBtn').innerText = soundEnabled ? '🔊' : '🔇';
-      }
-
-      checkDailyReset();
-      updateVipUI();
-      renderStats();
-      renderStatSelectOptions();
-      renderTasks();
-      renderFinance();
-    }
-
-    function saveData() {
-      localStorage.setItem('lifeRpgData', JSON.stringify(appData));
-    }
-
-    function getXpForNextLevel(level) {
-      return level * 100;
-    }
-
-    function renderStats() {
-      const container = document.getElementById('statsContainer');
-      container.innerHTML = '';
-
-      const statKeys = Object.keys(appData.stats);
-      const limitText = document.getElementById('statLimitText');
-      const addBtn = document.getElementById('addStatBtn');
-
-      if (!appData.isVip) {
-        limitText.innerText = `(${statKeys.length}/${FREE_STAT_LIMIT} Grátis)`;
-        if (statKeys.length >= FREE_STAT_LIMIT) {
-          addBtn.innerText = "🔒 Limite";
-          addBtn.disabled = true;
-        } else {
-          addBtn.innerText = "+ Atributo";
-          addBtn.disabled = false;
-        }
-      } else {
-        limitText.innerText = `(Ilimitado 👑)`;
-        addBtn.innerText = "+ Atributo";
-        addBtn.disabled = false;
-      }
-
-      for (let key in appData.stats) {
-        const stat = appData.stats[key];
-        const nextXp = getXpForNextLevel(stat.level);
-        const percent = Math.min((stat.xp / nextXp) * 100, 100);
-
-        container.innerHTML += `
-          <div class="stat-row">
-            <div class="stat-header">
-              <div class="stat-title-group">
-                <span>${stat.name} (Nível ${stat.level})</span>
-                <button class="btn-trash" onclick="openDeleteModal('${key}')" title="Excluir atributo">🗑️</button>
-              </div>
-              <span>${stat.xp} / ${nextXp} XP</span>
+    <!-- TELA PRINCIPAL DO APLICATIVO -->
+    <div id="app-container">
+        <header>
+            <div>
+                <h2 style="display:inline;">Life RPG</h2>
+                <span id="vip-badge" class="vip-badge">VIP ATIVO</span>
             </div>
-            <div class="stat-bar-bg">
-              <div class="stat-bar-fill" style="width: ${percent}%; background-color: ${stat.color}"></div>
+            <button class="logout-btn" onclick="logout()">Sair</button>
+        </header>
+
+        <!-- ATRIBUTOS -->
+        <div class="card">
+            <h3>Atributos</h3>
+            <div id="stats-container" style="margin-top: 15px;"></div>
+        </div>
+
+        <!-- HÁBITOS / TAREFAS -->
+        <div class="card">
+            <h3>Rotina Diária</h3>
+            <div id="tasks-container" style="margin-top: 15px;"></div>
+        </div>
+
+        <!-- CÓDIGO VIP -->
+        <div class="card vip-section">
+            <h3 style="color: var(--vip-color);">Ativar Código VIP</h3>
+            <div style="display:flex; gap: 10px; margin-top: 10px;">
+                <input type="text" id="vip-code-input" class="auth-input" style="margin:0;" placeholder="Insira seu código VIP">
+                <button class="auth-btn" style="width: auto; background-color: var(--vip-color); color: #000;" onclick="activateVipCode()">Ativar</button>
             </div>
-          </div>
-        `;
-      }
-    }
+        </div>
+    </div>
 
-    function openDeleteModal(key) {
-      statKeyToDelete = key;
-      const stat = appData.stats[key];
-      if (!stat) return;
+    <script>
+        // CONFIGURAÇÃO DO SUPABASE
+        const SUPABASE_URL = 'https://ukjkgcnwjflttakeijhj.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_pHGaOkGNivVwuOuCYGZ3Yw_-uiO8a4d';
 
-      document.getElementById('deleteStatNameTarget').innerText = `"${stat.name}"`;
-      document.getElementById('deleteConfirmInput').value = '';
-      document.getElementById('confirmDeleteStatBtn').disabled = true;
-      document.getElementById('deleteStatModal').style.display = 'flex';
-    }
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    function closeDeleteModal() {
-      statKeyToDelete = null;
-      document.getElementById('deleteStatModal').style.display = 'none';
-    }
+        let currentUser = null;
+        let isSignUpMode = false;
 
-    function validateDeleteInput() {
-      const inputVal = document.getElementById('deleteConfirmInput').value.trim();
-      const btn = document.getElementById('confirmDeleteStatBtn');
-      btn.disabled = (inputVal !== 'DELETE');
-    }
-
-    function executeDeleteStat() {
-      if (!statKeyToDelete || !appData.stats[statKeyToDelete]) return;
-
-      delete appData.stats[statKeyToDelete];
-      appData.tasks = appData.tasks.filter(t => t.stat !== statKeyToDelete);
-
-      saveData();
-      closeDeleteModal();
-      renderStats();
-      renderStatSelectOptions();
-      renderTasks();
-    }
-
-    function renderStatSelectOptions() {
-      const select = document.getElementById('newTaskStat');
-      select.innerHTML = '';
-      for (let key in appData.stats) {
-        select.innerHTML += `<option value="${key}">${appData.stats[key].name}</option>`;
-      }
-    }
-
-    function addNewStat() {
-      const currentStatsCount = Object.keys(appData.stats).length;
-
-      if (!appData.isVip && currentStatsCount >= FREE_STAT_LIMIT) {
-        alert("🔒 Limite de 3 atributos atingido no plano Grátis!");
-        promptVipCode();
-        return;
-      }
-
-      const nameInput = document.getElementById('newStatName');
-      const colorInput = document.getElementById('newStatColor');
-
-      const name = nameInput.value.trim();
-      const color = colorInput.value;
-
-      if (!name) return;
-
-      const key = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_');
-
-      if (!appData.stats[key]) {
-        appData.stats[key] = {
-          name: name,
-          level: 1,
-          xp: 0,
-          color: color
+        // ESTRUTURA DE DADOS PADRÃO
+        let userData = {
+            is_vip: false,
+            vip_expires_at: 0,
+            saved_money: 0,
+            goal_money: 30000,
+            stats: {
+                forca: { name: "Força", level: 1, xp: 0, color: "#f97316" },
+                inteligencia: { name: "Inteligência", level: 1, xp: 0, color: "#3b82f6" },
+                saude: { name: "Saúde", level: 1, xp: 0, color: "#22c55e" }
+            },
+            tasks: [
+                { id: 1, title: "💪 Treinar", stat: "forca", xpReward: 25, completed: false },
+                { id: 2, title: "💊 Tomar Creatina", stat: "saude", xpReward: 15, completed: false },
+                { id: 3, title: "📚 Ler 10 páginas", stat: "inteligencia", xpReward: 20, completed: false }
+            ]
         };
-        nameInput.value = '';
-        saveData();
-        renderStats();
-        renderStatSelectOptions();
-      }
-    }
 
-    function renderTasks() {
-      const container = document.getElementById('tasksContainer');
-      container.innerHTML = '';
-
-      const limitText = document.getElementById('taskLimitText');
-      const addBtn = document.getElementById('addTaskBtn');
-
-      if (!appData.isVip) {
-        limitText.innerText = `(${appData.tasks.length}/${FREE_TASK_LIMIT} Grátis)`;
-        if (appData.tasks.length >= FREE_TASK_LIMIT) {
-          addBtn.innerText = "🔒 Limite";
-          addBtn.disabled = true;
-        } else {
-          addBtn.innerText = "+ Criar";
-          addBtn.disabled = false;
+        // CONTROLO DE AUTENTICAÇÃO
+        function toggleAuthMode() {
+            isSignUpMode = !isSignUpMode;
+            document.getElementById('auth-title').innerText = isSignUpMode ? 'Life RPG - Criar Conta' : 'Life RPG - Login';
+            document.getElementById('auth-submit-btn').innerText = isSignUpMode ? 'Registar' : 'Entrar';
+            document.getElementById('auth-toggle-text').innerText = isSignUpMode ? 'Já tem conta? Faça login' : 'Não tem conta? Registe-se aqui';
         }
-      } else {
-        limitText.innerText = `(Ilimitado 👑)`;
-        addBtn.innerText = "+ Criar";
-        addBtn.disabled = false;
-      }
 
-      appData.tasks.forEach(task => {
-        const statName = appData.stats[task.stat]?.name || task.stat;
-        container.innerHTML += `
-          <div class="task-item ${task.completed ? 'completed' : ''}">
-            <div class="task-left" onclick="toggleTask(${task.id})">
-              <div class="checkbox">${task.completed ? '✓' : ''}</div>
-              <div class="task-info">
-                <span class="task-title">${task.title}</span>
-                <span class="task-reward">+${task.xpReward} XP em ${statName}</span>
-              </div>
-            </div>
-            <button class="delete-btn" onclick="deleteTask(${task.id})">✕</button>
-          </div>
-        `;
-      });
-    }
+        async function handleAuth() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
 
-    function addNewTask() {
-      if (!appData.isVip && appData.tasks.length >= FREE_TASK_LIMIT) {
-        alert("🔒 Limite de 5 tarefas atingido no plano Grátis!");
-        promptVipCode();
-        return;
-      }
+            if (!email || !password) {
+                alert('Preencha o e-mail e a palavra-passe.');
+                return;
+            }
 
-      const titleInput = document.getElementById('newTaskTitle');
-      const statSelect = document.getElementById('newTaskStat');
-      const xpInput = document.getElementById('newTaskXp');
-
-      const title = titleInput.value.trim();
-      const stat = statSelect.value;
-      const xpReward = parseInt(xpInput.value) || 20;
-
-      if (!title || !stat) return;
-
-      const newTask = {
-        id: Date.now(),
-        title: title,
-        stat: stat,
-        xpReward: xpReward,
-        completed: false
-      };
-
-      appData.tasks.push(newTask);
-      titleInput.value = '';
-      saveData();
-      renderTasks();
-    }
-
-    function deleteTask(id) {
-      appData.tasks = appData.tasks.filter(t => t.id !== id);
-      saveData();
-      renderTasks();
-    }
-
-    function toggleTask(id) {
-      const task = appData.tasks.find(t => t.id === id);
-      if (!task) return;
-
-      task.completed = !task.completed;
-      const stat = appData.stats[task.stat];
-      let leveledUp = false;
-
-      if (stat) {
-        if (task.completed) {
-          stat.xp += task.xpReward;
-          while (stat.xp >= getXpForNextLevel(stat.level)) {
-            stat.xp -= getXpForNextLevel(stat.level);
-            stat.level++;
-            leveledUp = true;
-          }
-          if (leveledUp) {
-            playSound('levelup');
-          } else {
-            playSound('check');
-          }
-        } else {
-          stat.xp -= task.xpReward;
-          if (stat.xp < 0) stat.xp = 0;
+            if (isSignUpMode) {
+                const { data, error } = await supabase.auth.signUp({ email, password });
+                if (error) return alert('Erro no registo: ' + error.message);
+                alert('Registo efetuado com sucesso!');
+                currentUser = data.user;
+                await initUserData(currentUser.id);
+            } else {
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) return alert('Erro no login: ' + error.message);
+                currentUser = data.user;
+                await loadUserData();
+            }
+            showAppInterface();
         }
-      }
 
-      saveData();
-      renderStats();
-      renderTasks();
-    }
-
-    function renderFinance() {
-      const saved = appData.savedMoney;
-      const goal = appData.goalMoney || 30000;
-      const percent = Math.min((saved / goal) * 100, 100);
-
-      document.getElementById('savedAmount').innerText = `R$ ${saved.toLocaleString('pt-BR')}`;
-      document.getElementById('goalAmountText').innerText = `R$ ${goal.toLocaleString('pt-BR')}`;
-      document.getElementById('financePercent').innerText = `${percent.toFixed(1)}%`;
-
-      const circle = document.getElementById('financeCircle');
-      const offset = CIRCLE_CIRCUMFERENCE - (percent / 100) * CIRCLE_CIRCUMFERENCE;
-      circle.style.strokeDashoffset = offset;
-    }
-
-    function changeGoalAmount() {
-      const currentGoal = appData.goalMoney || 30000;
-      const newGoalStr = prompt("Digite o novo valor da sua Meta Financeira (R$):", currentGoal);
-
-      if (!newGoalStr) return;
-
-      const newGoal = parseFloat(newGoalStr.replace(/[^0-9.]/g, ''));
-
-      if (!isNaN(newGoal) && newGoal > 0) {
-        appData.goalMoney = newGoal;
-        saveData();
-        renderFinance();
-      } else {
-        alert("Por favor, digite um valor numérico válido.");
-      }
-    }
-
-    function addFunds() {
-      const input = document.getElementById('depositInput');
-      const val = parseFloat(input.value);
-
-      if (!isNaN(val) && val > 0) {
-        appData.savedMoney += val;
-        input.value = '';
-        playSound('money');
-        saveData();
-        renderFinance();
-      }
-    }
-
-    function withdrawFunds() {
-      const input = document.getElementById('depositInput');
-      const val = parseFloat(input.value);
-
-      if (!isNaN(val) && val > 0) {
-        if (appData.savedMoney - val < 0) {
-          alert("O valor de retirada não pode ser maior do que o montante guardado.");
-          return;
+        async function logout() {
+            await supabase.auth.signOut();
+            location.reload();
         }
-        appData.savedMoney -= val;
-        input.value = '';
-        playSound('money');
-        saveData();
-        renderFinance();
-      }
-    }
 
-    loadData();
-  </script>
+        // CARREGAR E GUARDAR NO SUPABASE
+        async function initUserData(userId) {
+            const { error } = await supabase.from('user_data').insert([{ id: userId, ...userData }]);
+            if (error) console.error('Erro ao inicializar dados:', error);
+        }
+
+        async function loadUserData() {
+            const { data, error } = await supabase.from('user_data').select('*').eq('id', currentUser.id).single();
+            if (data) {
+                userData = data;
+                checkVipExpiration();
+                renderApp();
+            }
+        }
+
+        async function saveUserData() {
+            if (!currentUser) return;
+            await supabase.from('user_data').update(userData).eq('id', currentUser.id);
+        }
+
+        // REGRAS VIP
+        function checkVipExpiration() {
+            if (userData.is_vip && userData.vip_expires_at > 0 && Date.now() > userData.vip_expires_at) {
+                userData.is_vip = false;
+                userData.vip_expires_at = 0;
+                removeVipFeatures();
+                saveUserData();
+                alert('O seu período VIP expirou.');
+            }
+        }
+
+        function activateVipCode() {
+            const code = document.getElementById('vip-code-input').value.trim().toUpperCase();
+            let durationDays = 0;
+
+            if (code === 'VIPTEST10') durationDays = 10;
+            else if (code === 'VIPMENSAL3030') durationDays = 30;
+            else if (code === 'VIPANUAL365DIAS10') durationDays = 365;
+            else {
+                alert('Código VIP inválido.');
+                return;
+            }
+
+            userData.is_vip = true;
+            userData.vip_expires_at = Date.now() + (durationDays * 24 * 60 * 60 * 1000);
+            injectVipFeatures();
+            saveUserData();
+            renderApp();
+            alert(`Código VIP ativado com sucesso por ${durationDays} dias!`);
+        }
+
+        function injectVipFeatures() {
+            if (!userData.stats.carisma) userData.stats.carisma = { name: "Carisma", level: 1, xp: 0, color: "#eab308" };
+            if (!userData.stats.disciplina) userData.stats.disciplina = { name: "Disciplina", level: 1, xp: 0, color: "#a855f7" };
+            if (!userData.stats.foco) userData.stats.foco = { name: "Foco", level: 1, xp: 0, color: "#06b6d4" };
+
+            const vipTasks = [
+                { id: 101, title: "💧 Beber 3L de Água", stat: "saude", xpReward: 20, completed: false },
+                { id: 102, title: "🗣️ Treinar Oratória", stat: "carisma", xpReward: 30, completed: false },
+                { id: 103, title: "📋 Cumprir Rotina", stat: "disciplina", xpReward: 35, completed: false },
+                { id: 104, title: "🧊 Tomar banho gelado", stat: "foco", xpReward: 25, completed: false }
+            ];
+
+            vipTasks.forEach(vt => {
+                if (!userData.tasks.some(t => t.id === vt.id)) userData.tasks.push(vt);
+            });
+        }
+
+        function removeVipFeatures() {
+            delete userData.stats.carisma;
+            delete userData.stats.disciplina;
+            delete userData.stats.foco;
+            userData.tasks = userData.tasks.filter(t => t.id < 100);
+        }
+
+        // RENDERIZAÇÃO DA INTERFACE
+        function renderApp() {
+            document.getElementById('vip-badge').style.display = userData.is_vip ? 'inline-block' : 'none';
+
+            // Renderizar Atributos
+            const statsContainer = document.getElementById('stats-container');
+            statsContainer.innerHTML = '';
+            for (let key in userData.stats) {
+                const stat = userData.stats[key];
+                statsContainer.innerHTML += `
+                    <div class="stat-item">
+                        <div class="stat-header">
+                            <span>${stat.name} (Nível ${stat.level})</span>
+                            <span>${stat.xp}/100 XP</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${stat.xp}%; background-color: ${stat.color}"></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Renderizar Tarefas
+            const tasksContainer = document.getElementById('tasks-container');
+            tasksContainer.innerHTML = '';
+            userData.tasks.forEach(task => {
+                tasksContainer.innerHTML += `
+                    <div class="task-item ${task.completed ? 'completed' : ''}">
+                        <span>${task.title} (+${task.xpReward} XP)</span>
+                        <button class="task-btn" onclick="completeTask(${task.id})" ${task.completed ? 'disabled' : ''}>
+                            ${task.completed ? 'Concluída' : 'Concluir'}
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        function completeTask(taskId) {
+            const task = userData.tasks.find(t => t.id === taskId);
+            if (!task || task.completed) return;
+
+            task.completed = true;
+            const stat = userData.stats[task.stat];
+            if (stat) {
+                stat.xp += task.xpReward;
+                if (stat.xp >= 100) {
+                    stat.level += 1;
+                    stat.xp -= 100;
+                    alert(`Parabéns! Subiu para o Nível ${stat.level} em ${stat.name}!`);
+                }
+            }
+            saveUserData();
+            renderApp();
+        }
+
+        function showAppInterface() {
+            document.getElementById('auth-container').style.display = 'none';
+            document.getElementById('app-container').style.display = 'block';
+        }
+
+        // CHECAR SESSÃO AO CARREGAR PÁGINA
+        window.onload = async () => {
+            const { data } = await supabase.auth.getSession();
+            if (data.session) {
+                currentUser = data.session.user;
+                await loadUserData();
+                showAppInterface();
+            }
+        };
+    </script>
 </body>
 </html>
