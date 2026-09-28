@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Life RPG - Dark Edition</title>
+    <title>Life RPG</title>
     <!-- SDK Oficial do Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -32,7 +32,6 @@
             margin: 0 auto;
         }
 
-        /* Ecrã de Autenticação */
         #auth-container {
             background-color: var(--card-bg);
             padding: 25px;
@@ -74,12 +73,12 @@
 
         #status-msg {
             margin-top: 15px;
-            font-size: 0.9rem;
-            min-height: 20px;
+            font-size: 0.95rem;
+            min-height: 25px;
             word-break: break-word;
+            font-weight: bold;
         }
 
-        /* Interface Principal */
         #app-container {
             display: none;
         }
@@ -108,7 +107,6 @@
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         .stat-item {
@@ -176,7 +174,7 @@
 </head>
 <body>
 
-    <!-- ECRÃ DE AUTENTICAÇÃO -->
+    <!-- ECRÃ DE LOGIN / REGISTO -->
     <div id="auth-container">
         <h2>Life RPG</h2>
         <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.9rem;">Acesse a sua conta ou registe-se</p>
@@ -184,8 +182,8 @@
         <input type="email" id="auth-email" class="auth-input" placeholder="O seu e-mail">
         <input type="password" id="auth-password" class="auth-input" placeholder="A sua palavra-passe (mínimo 6 caracteres)">
         
-        <button id="btn-login" class="auth-btn" type="button">Entrar</button>
-        <button id="btn-signup" class="auth-btn btn-secondary" type="button">Cadastrar Nova Conta</button>
+        <button class="auth-btn" onclick="handleLogin()">Entrar</button>
+        <button class="auth-btn btn-secondary" onclick="handleSignUp()">Cadastrar Nova Conta</button>
 
         <div id="status-msg"></div>
     </div>
@@ -224,33 +222,35 @@
 
     <script>
         const SUPABASE_URL = 'https://ukjkgcnwjflttakeijhj.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_pHGaOkGNivVwuOuCYGZ3Yw_-uiO8a4d';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVramtnY253amZsdHRha2VpamhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1NTg3MjEsImV4cCI6MjEwNjEzNDcyMX0.aR-2C3M-s9xuNZ_-BarmGSi5zFFfUU6qt9sa1EiGWhc';
 
-        let supabase = null;
+        let supabaseClient = null;
         let currentUser = null;
 
         function showStatus(msg, isError = false) {
             const el = document.getElementById('status-msg');
-            el.style.color = isError ? 'var(--error-color)' : 'var(--accent-color)';
-            el.innerText = msg;
+            if (el) {
+                el.style.color = isError ? 'var(--error-color)' : 'var(--accent-color)';
+                el.innerText = msg;
+            }
         }
 
-        // Inicializar Supabase com verificação
-        try {
-            if (window.supabase) {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            } else {
-                showStatus('Erro ao carregar SDK do Supabase.', true);
+        window.onload = function() {
+            try {
+                if (window.supabase && window.supabase.createClient) {
+                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    checkSession();
+                } else {
+                    showStatus('Erro: Biblioteca do Supabase não carregou. Verifique a sua ligação.', true);
+                }
+            } catch (err) {
+                showStatus('Erro de Inicialização: ' + err.message, true);
             }
-        } catch (e) {
-            showStatus('Erro ao conectar ao Supabase: ' + e.message, true);
-        }
+        };
 
         const defaultData = {
             is_vip: false,
             vip_expires_at: 0,
-            saved_money: 0,
-            goal_money: 30000,
             stats: {
                 forca: { name: "Força", level: 1, xp: 0, color: "#f97316" },
                 inteligencia: { name: "Inteligência", level: 1, xp: 0, color: "#3b82f6" },
@@ -265,17 +265,6 @@
 
         let userData = JSON.parse(JSON.stringify(defaultData));
 
-        // EVENT LISTENERS DIRETOS (GARANTIA PARA MOBILE)
-        document.addEventListener('DOMContentLoaded', () => {
-            const btnLogin = document.getElementById('btn-login');
-            const btnSignup = document.getElementById('btn-signup');
-
-            if (btnLogin) btnLogin.addEventListener('click', handleLogin);
-            if (btnSignup) btnSignup.addEventListener('click', handleSignUp);
-
-            checkSession();
-        });
-
         async function handleLogin() {
             showStatus('A processar login...');
             const email = document.getElementById('auth-email').value.trim();
@@ -286,16 +275,25 @@
                 return;
             }
 
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-            if (error) {
-                showStatus('Erro no Login: ' + error.message, true);
+            if (!supabaseClient) {
+                showStatus('Erro: Supabase não está pronto.', true);
                 return;
             }
 
-            currentUser = data.user;
-            await loadUserData();
-            showAppInterface();
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+                if (error) {
+                    showStatus('Erro no Login: ' + error.message, true);
+                    return;
+                }
+
+                currentUser = data.user;
+                await loadUserData();
+                showAppInterface();
+            } catch (e) {
+                showStatus('Exceção no Login: ' + e.message, true);
+            }
         }
 
         async function handleSignUp() {
@@ -304,7 +302,7 @@
             const password = document.getElementById('auth-password').value.trim();
 
             if (!email || !password) {
-                showStatus('Preencha e-mail e palavra-passe para criar conta.', true);
+                showStatus('Preencha e-mail e palavra-passe.', true);
                 return;
             }
 
@@ -313,34 +311,42 @@
                 return;
             }
 
-            const { data, error } = await supabase.auth.signUp({ email, password });
-
-            if (error) {
-                showStatus('Erro no Registo: ' + error.message, true);
+            if (!supabaseClient) {
+                showStatus('Erro: Supabase não está pronto.', true);
                 return;
             }
 
-            if (data.user) {
-                currentUser = data.user;
-                await initUserData(currentUser.id);
-                showStatus('Conta criada com sucesso!');
-                showAppInterface();
+            try {
+                const { data, error } = await supabaseClient.auth.signUp({ email, password });
+
+                if (error) {
+                    showStatus('Erro no Registo: ' + error.message, true);
+                    return;
+                }
+
+                if (data.user) {
+                    currentUser = data.user;
+                    await initUserData(currentUser.id);
+                    showStatus('Conta criada! A carregar...');
+                    showAppInterface();
+                }
+            } catch (e) {
+                showStatus('Exceção no Cadastro: ' + e.message, true);
             }
         }
 
         async function handleLogout() {
-            await supabase.auth.signOut();
+            if (supabaseClient) await supabaseClient.auth.signOut();
             location.reload();
         }
 
         async function initUserData(userId) {
             const payload = { id: userId, ...defaultData };
-            const { error } = await supabase.from('user_data').insert([payload]);
-            if (error) console.error('Erro ao inicializar dados:', error);
+            await supabaseClient.from('user_data').insert([payload]);
         }
 
         async function loadUserData() {
-            const { data, error } = await supabase.from('user_data').select('*').eq('id', currentUser.id).single();
+            const { data } = await supabaseClient.from('user_data').select('*').eq('id', currentUser.id).single();
             if (data) {
                 userData = data;
                 checkVipExpiration();
@@ -353,8 +359,8 @@
         }
 
         async function saveUserData() {
-            if (!currentUser) return;
-            await supabase.from('user_data').update(userData).eq('id', currentUser.id);
+            if (!currentUser || !supabaseClient) return;
+            await supabaseClient.from('user_data').update(userData).eq('id', currentUser.id);
         }
 
         function checkVipExpiration() {
@@ -469,8 +475,8 @@
         }
 
         async function checkSession() {
-            if (!supabase) return;
-            const { data } = await supabase.auth.getSession();
+            if (!supabaseClient) return;
+            const { data } = await supabaseClient.auth.getSession();
             if (data && data.session) {
                 currentUser = data.session.user;
                 await loadUserData();
