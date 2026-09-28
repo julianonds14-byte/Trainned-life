@@ -14,6 +14,7 @@
             --text-color: #f8fafc;
             --text-secondary: #94a3b8;
             --vip-color: #eab308;
+            --error-color: #ef4444;
         }
 
         * {
@@ -69,6 +70,13 @@
             background-color: transparent;
             border: 2px solid var(--accent-color);
             color: var(--accent-color);
+        }
+
+        #status-msg {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            min-height: 20px;
+            word-break: break-word;
         }
 
         /* Interface Principal */
@@ -176,8 +184,10 @@
         <input type="email" id="auth-email" class="auth-input" placeholder="O seu e-mail">
         <input type="password" id="auth-password" class="auth-input" placeholder="A sua palavra-passe (mínimo 6 caracteres)">
         
-        <button class="auth-btn" onclick="handleLogin()">Entrar</button>
-        <button class="auth-btn btn-secondary" onclick="handleSignUp()">Cadastrar Nova Conta</button>
+        <button id="btn-login" class="auth-btn" type="button">Entrar</button>
+        <button id="btn-signup" class="auth-btn btn-secondary" type="button">Cadastrar Nova Conta</button>
+
+        <div id="status-msg"></div>
     </div>
 
     <!-- ECRÃ PRINCIPAL -->
@@ -213,15 +223,29 @@
     </div>
 
     <script>
-        // CONFIGURAÇÃO DO SUPABASE
         const SUPABASE_URL = 'https://ukjkgcnwjflttakeijhj.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_pHGaOkGNivVwuOuCYGZ3Yw_-uiO8a4d';
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+        let supabase = null;
         let currentUser = null;
 
-        // DADOS PADRÃO DO JOGO
+        function showStatus(msg, isError = false) {
+            const el = document.getElementById('status-msg');
+            el.style.color = isError ? 'var(--error-color)' : 'var(--accent-color)';
+            el.innerText = msg;
+        }
+
+        // Inicializar Supabase com verificação
+        try {
+            if (window.supabase) {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } else {
+                showStatus('Erro ao carregar SDK do Supabase.', true);
+            }
+        } catch (e) {
+            showStatus('Erro ao conectar ao Supabase: ' + e.message, true);
+        }
+
         const defaultData = {
             is_vip: false,
             vip_expires_at: 0,
@@ -241,20 +265,31 @@
 
         let userData = JSON.parse(JSON.stringify(defaultData));
 
-        // ENTRAR NA CONTA
+        // EVENT LISTENERS DIRETOS (GARANTIA PARA MOBILE)
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnLogin = document.getElementById('btn-login');
+            const btnSignup = document.getElementById('btn-signup');
+
+            if (btnLogin) btnLogin.addEventListener('click', handleLogin);
+            if (btnSignup) btnSignup.addEventListener('click', handleSignUp);
+
+            checkSession();
+        });
+
         async function handleLogin() {
+            showStatus('A processar login...');
             const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value.trim();
 
             if (!email || !password) {
-                alert('Por favor, preencha o e-mail e a palavra-passe.');
+                showStatus('Preencha o e-mail e a palavra-passe.', true);
                 return;
             }
 
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
-                alert('Erro ao entrar: ' + error.message);
+                showStatus('Erro no Login: ' + error.message, true);
                 return;
             }
 
@@ -263,32 +298,32 @@
             showAppInterface();
         }
 
-        // CADASTRAR NOVA CONTA
         async function handleSignUp() {
+            showStatus('A criar conta...');
             const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value.trim();
 
             if (!email || !password) {
-                alert('Por favor, preencha o e-mail e a palavra-passe para o registo.');
+                showStatus('Preencha e-mail e palavra-passe para criar conta.', true);
                 return;
             }
 
             if (password.length < 6) {
-                alert('A palavra-passe deve ter pelo menos 6 caracteres.');
+                showStatus('A palavra-passe deve ter pelo menos 6 caracteres.', true);
                 return;
             }
 
             const { data, error } = await supabase.auth.signUp({ email, password });
 
             if (error) {
-                alert('Erro ao criar conta: ' + error.message);
+                showStatus('Erro no Registo: ' + error.message, true);
                 return;
             }
 
             if (data.user) {
                 currentUser = data.user;
                 await initUserData(currentUser.id);
-                alert('Conta criada com sucesso!');
+                showStatus('Conta criada com sucesso!');
                 showAppInterface();
             }
         }
@@ -298,7 +333,6 @@
             location.reload();
         }
 
-        // BASE DE DADOS
         async function initUserData(userId) {
             const payload = { id: userId, ...defaultData };
             const { error } = await supabase.from('user_data').insert([payload]);
@@ -323,7 +357,6 @@
             await supabase.from('user_data').update(userData).eq('id', currentUser.id);
         }
 
-        // SISTEMA VIP
         function checkVipExpiration() {
             if (userData.is_vip && userData.vip_expires_at > 0 && Date.now() > userData.vip_expires_at) {
                 userData.is_vip = false;
@@ -378,11 +411,9 @@
             userData.tasks = userData.tasks.filter(t => t.id < 100);
         }
 
-        // DIBUXAR A INTERFACE
         function renderApp() {
             document.getElementById('vip-badge').style.display = userData.is_vip ? 'inline-block' : 'none';
 
-            // Renderizar Atributos
             const statsContainer = document.getElementById('stats-container');
             statsContainer.innerHTML = '';
             for (let key in userData.stats) {
@@ -400,7 +431,6 @@
                 `;
             }
 
-            // Renderizar Tarefas
             const tasksContainer = document.getElementById('tasks-container');
             tasksContainer.innerHTML = '';
             userData.tasks.forEach(task => {
@@ -438,15 +468,15 @@
             document.getElementById('app-container').style.display = 'block';
         }
 
-        // VERIFICAR SESSÃO AO ABRIR
-        window.onload = async () => {
+        async function checkSession() {
+            if (!supabase) return;
             const { data } = await supabase.auth.getSession();
             if (data && data.session) {
                 currentUser = data.session.user;
                 await loadUserData();
                 showAppInterface();
             }
-        };
+        }
     </script>
 </body>
 </html>
