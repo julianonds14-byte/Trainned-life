@@ -65,12 +65,17 @@
             margin-top: 10px;
         }
 
-        .toggle-auth {
+        .toggle-btn {
+            background: transparent;
+            border: none;
             color: var(--text-secondary);
             margin-top: 15px;
             font-size: 0.9rem;
             cursor: pointer;
             text-decoration: underline;
+            padding: 8px;
+            width: 100%;
+            display: block;
         }
 
         /* Interface Principal */
@@ -176,7 +181,7 @@
         <input type="email" id="auth-email" class="auth-input" placeholder="Seu e-mail">
         <input type="password" id="auth-password" class="auth-input" placeholder="Sua palavra-passe">
         <button id="auth-submit-btn" class="auth-btn" onclick="handleAuth()">Entrar</button>
-        <p class="toggle-auth" id="auth-toggle-text" onclick="toggleAuthMode()">Não tem conta? Registe-se aqui</p>
+        <button type="button" class="toggle-btn" id="auth-toggle-btn" onclick="toggleAuthMode()">Não tem conta? Registe-se aqui</button>
     </div>
 
     <!-- TELA PRINCIPAL DO APLICATIVO -->
@@ -244,7 +249,7 @@
             isSignUpMode = !isSignUpMode;
             document.getElementById('auth-title').innerText = isSignUpMode ? 'Life RPG - Criar Conta' : 'Life RPG - Login';
             document.getElementById('auth-submit-btn').innerText = isSignUpMode ? 'Registar' : 'Entrar';
-            document.getElementById('auth-toggle-text').innerText = isSignUpMode ? 'Já tem conta? Faça login' : 'Não tem conta? Registe-se aqui';
+            document.getElementById('auth-toggle-btn').innerText = isSignUpMode ? 'Já tem conta? Faça login' : 'Não tem conta? Registe-se aqui';
         }
 
         async function handleAuth() {
@@ -259,16 +264,22 @@
             if (isSignUpMode) {
                 const { data, error } = await supabase.auth.signUp({ email, password });
                 if (error) return alert('Erro no registo: ' + error.message);
-                alert('Registo efetuado com sucesso!');
+                
                 currentUser = data.user;
-                await initUserData(currentUser.id);
+                if (currentUser) {
+                    await initUserData(currentUser.id);
+                    alert('Registo efetuado com sucesso!');
+                    showAppInterface();
+                } else {
+                    alert('Registo enviado! Se necessário, confirme o e-mail para acessar.');
+                }
             } else {
                 const { data, error } = await supabase.auth.signInWithPassword({ email, password });
                 if (error) return alert('Erro no login: ' + error.message);
                 currentUser = data.user;
                 await loadUserData();
+                showAppInterface();
             }
-            showAppInterface();
         }
 
         async function logout() {
