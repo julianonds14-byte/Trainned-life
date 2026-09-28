@@ -65,17 +65,10 @@
             margin-top: 10px;
         }
 
-        .toggle-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            margin-top: 15px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            text-decoration: underline;
-            padding: 8px;
-            width: 100%;
-            display: block;
+        .register-btn {
+            background-color: transparent;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
         }
 
         /* Interface Principal */
@@ -177,11 +170,14 @@
 
     <!-- TELA DE AUTENTICAÇÃO -->
     <div id="auth-container">
-        <h2 id="auth-title">Life RPG - Login</h2>
+        <h2>Life RPG</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.9rem;">Entre ou crie a sua conta</p>
+        
         <input type="email" id="auth-email" class="auth-input" placeholder="Seu e-mail">
         <input type="password" id="auth-password" class="auth-input" placeholder="Sua palavra-passe">
-        <button id="auth-submit-btn" class="auth-btn" onclick="handleAuth()">Entrar</button>
-        <button type="button" class="toggle-btn" id="auth-toggle-btn" onclick="toggleAuthMode()">Não tem conta? Registe-se aqui</button>
+        
+        <button class="auth-btn" onclick="login()">Entrar</button>
+        <button class="auth-btn register-btn" onclick="signUp()">Criar Nova Conta</button>
     </div>
 
     <!-- TELA PRINCIPAL DO APLICATIVO -->
@@ -224,7 +220,6 @@
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentUser = null;
-        let isSignUpMode = false;
 
         // ESTRUTURA DE DADOS PADRÃO
         let userData = {
@@ -244,15 +239,8 @@
             ]
         };
 
-        // CONTROLO DE AUTENTICAÇÃO
-        function toggleAuthMode() {
-            isSignUpMode = !isSignUpMode;
-            document.getElementById('auth-title').innerText = isSignUpMode ? 'Life RPG - Criar Conta' : 'Life RPG - Login';
-            document.getElementById('auth-submit-btn').innerText = isSignUpMode ? 'Registar' : 'Entrar';
-            document.getElementById('auth-toggle-btn').innerText = isSignUpMode ? 'Já tem conta? Faça login' : 'Não tem conta? Registe-se aqui';
-        }
-
-        async function handleAuth() {
+        // FUNÇÃO PARA ENTRAR
+        async function login() {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
 
@@ -261,23 +249,31 @@
                 return;
             }
 
-            if (isSignUpMode) {
-                const { data, error } = await supabase.auth.signUp({ email, password });
-                if (error) return alert('Erro no registo: ' + error.message);
-                
-                currentUser = data.user;
-                if (currentUser) {
-                    await initUserData(currentUser.id);
-                    alert('Registo efetuado com sucesso!');
-                    showAppInterface();
-                } else {
-                    alert('Registo enviado! Se necessário, confirme o e-mail para acessar.');
-                }
-            } else {
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) return alert('Erro no login: ' + error.message);
-                currentUser = data.user;
-                await loadUserData();
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) return alert('Erro no login: ' + error.message);
+            
+            currentUser = data.user;
+            await loadUserData();
+            showAppInterface();
+        }
+
+        // FUNÇÃO PARA CRIAR CONTA
+        async function signUp() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+
+            if (!email || !password) {
+                alert('Preencha o e-mail e a palavra-passe.');
+                return;
+            }
+
+            const { data, error } = await supabase.auth.signUp({ email, password });
+            if (error) return alert('Erro no registo: ' + error.message);
+
+            currentUser = data.user;
+            if (currentUser) {
+                await initUserData(currentUser.id);
+                alert('Conta criada com sucesso!');
                 showAppInterface();
             }
         }
