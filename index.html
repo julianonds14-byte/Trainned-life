@@ -38,7 +38,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             text-align: center;
-            margin-top: 50px;
+            margin-top: 40px;
         }
 
         .auth-input {
@@ -65,7 +65,7 @@
             margin-top: 10px;
         }
 
-        .register-btn {
+        .btn-secondary {
             background-color: transparent;
             border: 2px solid var(--accent-color);
             color: var(--accent-color);
@@ -168,26 +168,26 @@
 </head>
 <body>
 
-    <!-- TELA DE AUTENTICAÇÃO -->
+    <!-- ECRÃ DE AUTENTICAÇÃO -->
     <div id="auth-container">
         <h2>Life RPG</h2>
-        <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.9rem;">Entre ou crie a sua conta</p>
+        <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.9rem;">Acesse a sua conta ou registe-se</p>
         
-        <input type="email" id="auth-email" class="auth-input" placeholder="Seu e-mail">
-        <input type="password" id="auth-password" class="auth-input" placeholder="Sua palavra-passe">
+        <input type="email" id="auth-email" class="auth-input" placeholder="O seu e-mail">
+        <input type="password" id="auth-password" class="auth-input" placeholder="A sua palavra-passe (mínimo 6 caracteres)">
         
-        <button class="auth-btn" onclick="login()">Entrar</button>
-        <button class="auth-btn register-btn" onclick="signUp()">Criar Nova Conta</button>
+        <button class="auth-btn" onclick="handleLogin()">Entrar</button>
+        <button class="auth-btn btn-secondary" onclick="handleSignUp()">Cadastrar Nova Conta</button>
     </div>
 
-    <!-- TELA PRINCIPAL DO APLICATIVO -->
+    <!-- ECRÃ PRINCIPAL -->
     <div id="app-container">
         <header>
             <div>
                 <h2 style="display:inline;">Life RPG</h2>
                 <span id="vip-badge" class="vip-badge">VIP ATIVO</span>
             </div>
-            <button class="logout-btn" onclick="logout()">Sair</button>
+            <button class="logout-btn" onclick="handleLogout()">Sair</button>
         </header>
 
         <!-- ATRIBUTOS -->
@@ -196,7 +196,7 @@
             <div id="stats-container" style="margin-top: 15px;"></div>
         </div>
 
-        <!-- HÁBITOS / TAREFAS -->
+        <!-- TAREFAS -->
         <div class="card">
             <h3>Rotina Diária</h3>
             <div id="tasks-container" style="margin-top: 15px;"></div>
@@ -221,8 +221,8 @@
 
         let currentUser = null;
 
-        // ESTRUTURA DE DADOS PADRÃO
-        let userData = {
+        // DADOS PADRÃO DO JOGO
+        const defaultData = {
             is_vip: false,
             vip_expires_at: 0,
             saved_money: 0,
@@ -239,53 +239,69 @@
             ]
         };
 
-        // FUNÇÃO PARA ENTRAR
-        async function login() {
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-password').value;
+        let userData = JSON.parse(JSON.stringify(defaultData));
+
+        // ENTRAR NA CONTA
+        async function handleLogin() {
+            const email = document.getElementById('auth-email').value.trim();
+            const password = document.getElementById('auth-password').value.trim();
 
             if (!email || !password) {
-                alert('Preencha o e-mail e a palavra-passe.');
+                alert('Por favor, preencha o e-mail e a palavra-passe.');
                 return;
             }
 
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) return alert('Erro no login: ' + error.message);
-            
+
+            if (error) {
+                alert('Erro ao entrar: ' + error.message);
+                return;
+            }
+
             currentUser = data.user;
             await loadUserData();
             showAppInterface();
         }
 
-        // FUNÇÃO PARA CRIAR CONTA
-        async function signUp() {
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-password').value;
+        // CADASTRAR NOVA CONTA
+        async function handleSignUp() {
+            const email = document.getElementById('auth-email').value.trim();
+            const password = document.getElementById('auth-password').value.trim();
 
             if (!email || !password) {
-                alert('Preencha o e-mail e a palavra-passe.');
+                alert('Por favor, preencha o e-mail e a palavra-passe para o registo.');
+                return;
+            }
+
+            if (password.length < 6) {
+                alert('A palavra-passe deve ter pelo menos 6 caracteres.');
                 return;
             }
 
             const { data, error } = await supabase.auth.signUp({ email, password });
-            if (error) return alert('Erro no registo: ' + error.message);
 
-            currentUser = data.user;
-            if (currentUser) {
+            if (error) {
+                alert('Erro ao criar conta: ' + error.message);
+                return;
+            }
+
+            if (data.user) {
+                currentUser = data.user;
                 await initUserData(currentUser.id);
                 alert('Conta criada com sucesso!');
                 showAppInterface();
             }
         }
 
-        async function logout() {
+        async function handleLogout() {
             await supabase.auth.signOut();
             location.reload();
         }
 
-        // CARREGAR E GUARDAR NO SUPABASE
+        // BASE DE DADOS
         async function initUserData(userId) {
-            const { error } = await supabase.from('user_data').insert([{ id: userId, ...userData }]);
+            const payload = { id: userId, ...defaultData };
+            const { error } = await supabase.from('user_data').insert([payload]);
             if (error) console.error('Erro ao inicializar dados:', error);
         }
 
@@ -295,6 +311,10 @@
                 userData = data;
                 checkVipExpiration();
                 renderApp();
+            } else {
+                await initUserData(currentUser.id);
+                userData = JSON.parse(JSON.stringify(defaultData));
+                renderApp();
             }
         }
 
@@ -303,7 +323,7 @@
             await supabase.from('user_data').update(userData).eq('id', currentUser.id);
         }
 
-        // REGRAS VIP
+        // SISTEMA VIP
         function checkVipExpiration() {
             if (userData.is_vip && userData.vip_expires_at > 0 && Date.now() > userData.vip_expires_at) {
                 userData.is_vip = false;
@@ -358,7 +378,7 @@
             userData.tasks = userData.tasks.filter(t => t.id < 100);
         }
 
-        // RENDERIZAÇÃO DA INTERFACE
+        // DIBUXAR A INTERFACE
         function renderApp() {
             document.getElementById('vip-badge').style.display = userData.is_vip ? 'inline-block' : 'none';
 
@@ -418,10 +438,10 @@
             document.getElementById('app-container').style.display = 'block';
         }
 
-        // CHECAR SESSÃO AO CARREGAR PÁGINA
+        // VERIFICAR SESSÃO AO ABRIR
         window.onload = async () => {
             const { data } = await supabase.auth.getSession();
-            if (data.session) {
+            if (data && data.session) {
                 currentUser = data.session.user;
                 await loadUserData();
                 showAppInterface();
