@@ -698,6 +698,7 @@
 
     let supabaseClient = null;
     let currentUser = null;
+    let isDataLoaded = false; // TRAVA PARA SÓ CHECAR TIMER APÓS CARREGAR DADOS
 
     function showAuthStatus(msg, isError = false) {
       const el = document.getElementById('auth-status-msg');
@@ -963,7 +964,8 @@
     }
 
     function checkVipTimer() {
-      if (!appData.isVip || !appData.vipExpiresAt) return;
+      // SÓ VERIFICA SE OS DADOS TIVEREM SIDO RETORNADOS DO BANCO/LOCALSTORAGE
+      if (!isDataLoaded || !appData.isVip || !appData.vipExpiresAt) return;
 
       const now = Date.now();
       const expiresAt = Number(appData.vipExpiresAt);
@@ -1108,6 +1110,9 @@
         soundEnabled = JSON.parse(savedSound);
         document.getElementById('soundBtn').innerText = soundEnabled ? '🔊' : '🔇';
       }
+
+      // MARCA COMO CARREGADO PARA LIBERAR A EXECUÇÃO DO TIMER
+      isDataLoaded = true;
 
       if (appData.isVip && appData.vipExpiresAt) {
         if (Date.now() >= Number(appData.vipExpiresAt)) {
