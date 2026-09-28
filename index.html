@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Life RPG & Finanças</title>
-  <!-- Supabase JS SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --bg: #0f1117;
@@ -35,68 +33,6 @@
       max-width: 480px;
       margin: 0 auto;
       padding-bottom: 80px;
-      min-height: 100vh;
-    }
-
-    /* ESTILOS DA TELA DE AUTH/LOGIN */
-    #auth-screen {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      min-height: 80vh;
-    }
-
-    .auth-card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 24px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      text-align: center;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-    }
-
-    .auth-card h2 {
-      font-size: 1.6rem;
-      letter-spacing: 1px;
-    }
-
-    .auth-card p {
-      color: var(--text-dim);
-      font-size: 0.85rem;
-      margin-top: -8px;
-      margin-bottom: 8px;
-    }
-
-    .auth-btn {
-      width: 100%;
-      background-color: var(--accent-green);
-      color: #000;
-      border: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-weight: 700;
-      cursor: pointer;
-      font-size: 0.95rem;
-    }
-
-    .auth-btn-secondary {
-      background-color: transparent;
-      border: 1px solid var(--card-border);
-      color: var(--text);
-    }
-
-    #auth-status-msg {
-      font-size: 0.85rem;
-      min-height: 20px;
-      word-break: break-word;
-    }
-
-    /* ESCONDER A APLICAÇÃO ATÉ EFETUAR LOGIN */
-    #app-screen {
-      display: none;
     }
 
     header {
@@ -130,7 +66,7 @@
       align-items: center;
     }
 
-    .sound-toggle-btn, .vip-badge-btn, .logout-btn {
+    .sound-toggle-btn, .vip-badge-btn {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       color: var(--text);
@@ -139,11 +75,6 @@
       font-size: 0.8rem;
       cursor: pointer;
       white-space: nowrap;
-    }
-
-    .logout-btn {
-      border-color: var(--accent-red);
-      color: var(--accent-red);
     }
 
     .vip-badge-btn.active {
@@ -577,227 +508,101 @@
 </head>
 <body>
 
-  <!-- TELA DE AUTENTICAÇÃO -->
-  <div id="auth-screen">
-    <div class="auth-card">
-      <h2>🎮 LIFE RPG</h2>
-      <p>Acesse sua conta para sincronizar seu progresso</p>
-      
-      <input type="email" id="auth-email" class="input-field" placeholder="Seu e-mail">
-      <input type="password" id="auth-password" class="input-field" placeholder="Sua senha">
-      
-      <button class="auth-btn" onclick="handleLogin()">Entrar</button>
-      <button class="auth-btn auth-btn-secondary" onclick="handleSignUp()">Cadastrar Nova Conta</button>
-      
-      <div id="auth-status-msg"></div>
+  <header>
+    <div class="header-btns">
+      <button class="vip-badge-btn" id="vipStatusBtn" onclick="promptVipCode()">🔑 VIP</button>
+      <button class="sound-toggle-btn" id="soundBtn" onclick="toggleSound()">🔊</button>
+    </div>
+    <h1>🎮 LIFE RPG</h1>
+    <p>Evolua na vida real</p>
+  </header>
+
+  <div class="section-title">
+    <span>⚡ Atributos & Níveis</span>
+    <span class="limit-badge" id="statLimitText"></span>
+  </div>
+  <div class="stats-card" id="statsContainer"></div>
+
+  <div class="add-card">
+    <div class="form-row">
+      <input type="text" id="newStatName" class="input-field" placeholder="Novo Atributo (ex: Foco)">
+      <input type="color" id="newStatColor" value="#3b82f6" title="Escolha uma cor">
+      <button id="addStatBtn" onclick="addNewStat()">+ Atributo</button>
     </div>
   </div>
 
-  <!-- APLICAÇÃO PRINCIPAL -->
-  <div id="app-screen">
-    <header>
-      <div class="header-btns">
-        <button class="vip-badge-btn" id="vipStatusBtn" onclick="promptVipCode()">🔑 VIP</button>
-        <button class="sound-toggle-btn" id="soundBtn" onclick="toggleSound()">🔊</button>
-        <button class="logout-btn" onclick="handleLogout()">Sair</button>
-      </div>
-      <h1>🎮 LIFE RPG</h1>
-      <p>Evolua na vida real</p>
-    </header>
+  <div class="section-title">
+    <span>✅ Hábitos Diários</span>
+    <span class="limit-badge" id="taskLimitText"></span>
+  </div>
 
-    <div class="section-title">
-      <span>⚡ Atributos & Níveis</span>
-      <span class="limit-badge" id="statLimitText"></span>
+  <div class="add-card">
+    <input type="text" id="newTaskTitle" class="input-field" placeholder="Ex: Meditar 10 minutos">
+    <div class="form-row">
+      <select id="newTaskStat"></select>
+      <input type="number" id="newTaskXp" class="input-field" placeholder="XP" value="20" min="5" max="100" style="width: 80px;">
+      <button id="addTaskBtn" onclick="addNewTask()">+ Criar</button>
     </div>
-    <div class="stats-card" id="statsContainer"></div>
+  </div>
 
-    <div class="add-card">
-      <div class="form-row">
-        <input type="text" id="newStatName" class="input-field" placeholder="Novo Atributo (ex: Foco)">
-        <input type="color" id="newStatColor" value="#3b82f6" title="Escolha uma cor">
-        <button id="addStatBtn" onclick="addNewStat()">+ Atributo</button>
-      </div>
-    </div>
+  <div class="tasks-list" id="tasksContainer"></div>
+  <button class="reset-day-btn" onclick="resetDayManually()">🔄 Renovar Hábitos do Dia</button>
 
-    <div class="section-title">
-      <span>✅ Hábitos Diários</span>
-      <span class="limit-badge" id="taskLimitText"></span>
-    </div>
-
-    <div class="add-card">
-      <input type="text" id="newTaskTitle" class="input-field" placeholder="Ex: Meditar 10 minutos">
-      <div class="form-row">
-        <select id="newTaskStat"></select>
-        <input type="number" id="newTaskXp" class="input-field" placeholder="XP" value="20" min="5" max="100" style="width: 80px;">
-        <button id="addTaskBtn" onclick="addNewTask()">+ Criar</button>
+  <div class="section-title">💰 Meta Financeira</div>
+  <div class="finance-card">
+    <div class="chart-container">
+      <svg viewBox="0 0 160 160">
+        <circle class="chart-bg" cx="80" cy="80" r="70"></circle>
+        <circle class="chart-progress" id="financeCircle" cx="80" cy="80" r="70"></circle>
+      </svg>
+      <div class="chart-text">
+        <div class="chart-percent" id="financePercent">0%</div>
+        <div class="chart-subtitle">Concluído</div>
       </div>
     </div>
 
-    <div class="tasks-list" id="tasksContainer"></div>
-    <button class="reset-day-btn" onclick="resetDayManually()">🔄 Renovar Hábitos do Dia</button>
-
-    <div class="section-title">💰 Meta Financeira</div>
-    <div class="finance-card">
-      <div class="chart-container">
-        <svg viewBox="0 0 160 160">
-          <circle class="chart-bg" cx="80" cy="80" r="70"></circle>
-          <circle class="chart-progress" id="financeCircle" cx="80" cy="80" r="70"></circle>
-        </svg>
-        <div class="chart-text">
-          <div class="chart-percent" id="financePercent">0%</div>
-          <div class="chart-subtitle">Concluído</div>
-        </div>
-      </div>
-
-      <div class="finance-inputs">
-        <div class="input-group">
-          <input type="number" id="depositInput" class="input-field" placeholder="Valor (R$)" min="0" step="10">
-          <button onclick="addFunds()">+ Guardar</button>
-          <button class="btn-withdraw" onclick="withdrawFunds()">- Retirar</button>
-        </div>
-      </div>
-
-      <div class="finance-summary-grid">
-        <div class="summary-box">
-          <span class="summary-label">Guardado:</span>
-          <span class="summary-value" id="savedAmount">R$ 0</span>
-        </div>
-        <div class="summary-box right">
-          <span class="summary-label">Meta: <button class="edit-goal-btn" onclick="changeGoalAmount()" title="Alterar Meta">✏️</button></span>
-          <span class="summary-value" id="goalAmountText">R$ 30.000</span>
-        </div>
+    <div class="finance-inputs">
+      <div class="input-group">
+        <input type="number" id="depositInput" class="input-field" placeholder="Valor (R$)" min="0" step="10">
+        <button onclick="addFunds()">+ Guardar</button>
+        <button class="btn-withdraw" onclick="withdrawFunds()">- Retirar</button>
       </div>
     </div>
 
-    <div class="vip-banner" id="vipBanner">
-      <h3>👑 Desbloqueie o Life RPG VIP</h3>
-      <p>Use um código VIP para liberar recursos ilimitados!</p>
-      <button style="background: var(--accent-yellow); color: #000;" onclick="promptVipCode()">Inserir Código VIP</button>
+    <div class="finance-summary-grid">
+      <div class="summary-box">
+        <span class="summary-label">Guardado:</span>
+        <span class="summary-value" id="savedAmount">R$ 0</span>
+      </div>
+      <div class="summary-box right">
+        <span class="summary-label">Meta: <button class="edit-goal-btn" onclick="changeGoalAmount()" title="Alterar Meta">✏️</button></span>
+        <span class="summary-value" id="goalAmountText">R$ 30.000</span>
+      </div>
     </div>
+  </div>
 
-    <div class="modal-overlay" id="deleteStatModal">
-      <div class="modal-card">
-        <div class="modal-title">⚠️ Excluir Atributo</div>
-        <div class="modal-body">
-          Deseja apagar o atributo <strong id="deleteStatNameTarget" style="color:#fff"></strong> e todas as suas tarefas?<br><br>
-          Digite <strong style="color: var(--accent-red)">DELETE</strong> para confirmar:
-        </div>
-        <input type="text" id="deleteConfirmInput" class="input-field" placeholder="Digite DELETE" oninput="validateDeleteInput()">
-        <div class="modal-actions">
-          <button class="btn-secondary" onclick="closeDeleteModal()">Cancelar</button>
-          <button id="confirmDeleteStatBtn" class="btn-danger" disabled onclick="executeDeleteStat()">Excluir</button>
-        </div>
+  <div class="vip-banner" id="vipBanner">
+    <h3>👑 Desbloqueie o Life RPG VIP</h3>
+    <p>Use um código VIP para liberar recursos ilimitados!</p>
+    <button style="background: var(--accent-yellow); color: #000;" onclick="promptVipCode()">Inserir Código VIP</button>
+  </div>
+
+  <div class="modal-overlay" id="deleteStatModal">
+    <div class="modal-card">
+      <div class="modal-title">⚠️ Excluir Atributo</div>
+      <div class="modal-body">
+        Deseja apagar o atributo <strong id="deleteStatNameTarget" style="color:#fff"></strong> e todas as suas tarefas?<br><br>
+        Digite <strong style="color: var(--accent-red)">DELETE</strong> para confirmar:
+      </div>
+      <input type="text" id="deleteConfirmInput" class="input-field" placeholder="Digite DELETE" oninput="validateDeleteInput()">
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeDeleteModal()">Cancelar</button>
+        <button id="confirmDeleteStatBtn" class="btn-danger" disabled onclick="executeDeleteStat()">Excluir</button>
       </div>
     </div>
   </div>
 
   <script>
-    // INTEGRAÇÃO SUPABASE
-    const SUPABASE_URL = 'https://ukjkgcnwjflttakeijhj.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVramtnY253amZsdHRha2VpamhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1NTg3MjEsImV4cCI6MjEwNjEzNDcyMX0.aR-2C3M-s9xuNZ_-BarmGSi5zFFfUU6qt9sa1EiGWhc';
-
-    let supabaseClient = null;
-    let currentUser = null;
-    let isDataLoaded = false; // TRAVA PARA SÓ CHECAR TIMER APÓS CARREGAR DADOS
-
-    function showAuthStatus(msg, isError = false) {
-      const el = document.getElementById('auth-status-msg');
-      if (el) {
-        el.style.color = isError ? 'var(--accent-red)' : 'var(--accent-green)';
-        el.innerText = msg;
-      }
-    }
-
-    async function handleLogin() {
-      showAuthStatus('A entrar...');
-      const email = document.getElementById('auth-email').value.trim();
-      const password = document.getElementById('auth-password').value.trim();
-
-      if (!email || !password) {
-        showAuthStatus('Preencha o e-mail e a senha.', true);
-        return;
-      }
-
-      try {
-        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (error) {
-          showAuthStatus('Erro: ' + error.message, true);
-          return;
-        }
-        currentUser = data.user;
-        await loadData();
-        showAppScreen();
-      } catch (e) {
-        showAuthStatus('Erro no login: ' + e.message, true);
-      }
-    }
-
-    async function handleSignUp() {
-      showAuthStatus('A criar conta...');
-      const email = document.getElementById('auth-email').value.trim();
-      const password = document.getElementById('auth-password').value.trim();
-
-      if (!email || !password) {
-        showAuthStatus('Preencha o e-mail e a senha.', true);
-        return;
-      }
-
-      if (password.length < 6) {
-        showAuthStatus('A senha deve ter pelo menos 6 caracteres.', true);
-        return;
-      }
-
-      try {
-        const { data, error } = await supabaseClient.auth.signUp({ email, password });
-        if (error) {
-          showAuthStatus('Erro: ' + error.message, true);
-          return;
-        }
-        if (data.user) {
-          currentUser = data.user;
-          await saveData();
-          showAuthStatus('Conta criada com sucesso!');
-          showAppScreen();
-        }
-      } catch (e) {
-        showAuthStatus('Erro ao cadastrar: ' + e.message, true);
-      }
-    }
-
-    async function handleLogout() {
-      if (supabaseClient) await supabaseClient.auth.signOut();
-      location.reload();
-    }
-
-    function showAppScreen() {
-      document.getElementById('auth-screen').style.display = 'none';
-      document.getElementById('app-screen').style.display = 'block';
-    }
-
-    async function checkSession() {
-      if (!supabaseClient) return;
-      const { data } = await supabaseClient.auth.getSession();
-      if (data && data.session) {
-        currentUser = data.session.user;
-        await loadData();
-        showAppScreen();
-      }
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      try {
-        if (window.supabase && window.supabase.createClient) {
-          supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-          checkSession();
-        } else {
-          showAuthStatus('Erro ao carregar SDK do Supabase.', true);
-        }
-      } catch (err) {
-        showAuthStatus('Erro: ' + err.message, true);
-      }
-    });
-
-    // LÓGICA DO APLICATIVO
     const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 70;
 
     const VIP_CODES = {
@@ -951,25 +756,26 @@
       });
     }
 
+    // REMOVE ATRIBUTOS E TAREFAS VIP AO EXPIRAR
     function removeVipPreset() {
+      // Remove as tarefas criadas pelo VIP
       appData.tasks = appData.tasks.filter(task => {
         const isVipTitle = VIP_TASKS_TITLES.some(vt => vt.toLowerCase() === task.title.toLowerCase());
         const isVipStatTask = VIP_STATS_KEYS.includes(task.stat);
         return !isVipTitle && !isVipStatTask;
       });
 
+      // Remove os atributos VIP
       VIP_STATS_KEYS.forEach(key => {
         delete appData.stats[key];
       });
     }
 
     function checkVipTimer() {
-      // SÓ VERIFICA SE OS DADOS TIVEREM SIDO RETORNADOS DO BANCO/LOCALSTORAGE
-      if (!isDataLoaded || !appData.isVip || !appData.vipExpiresAt) return;
+      if (!appData.isVip || !appData.vipExpiresAt) return;
 
       const now = Date.now();
-      const expiresAt = Number(appData.vipExpiresAt);
-      const timeLeftMs = expiresAt - now;
+      const timeLeftMs = appData.vipExpiresAt - now;
 
       if (timeLeftMs <= 0) {
         appData.isVip = false;
@@ -1006,7 +812,7 @@
 
     setInterval(checkVipTimer, 1000);
 
-    async function promptVipCode() {
+    function promptVipCode() {
       if (appData.isVip) {
         const disable = confirm("Sua assinatura VIP está ativa. Deseja cancelar agora?");
         if (disable) {
@@ -1015,7 +821,7 @@
           
           removeVipPreset();
 
-          await saveData();
+          saveData();
           alert("Status VIP cancelado!");
           updateVipUI();
           renderStats();
@@ -1034,11 +840,11 @@
         const durationMs = VIP_CODES[cleanCode];
         
         appData.isVip = true;
-        appData.vipExpiresAt = Number(Date.now() + durationMs);
+        appData.vipExpiresAt = Date.now() + durationMs;
         
         injectVipPreset();
 
-        await saveData();
+        saveData();
         playSound('levelup');
 
         if (cleanCode === 'VIPTEST10') {
@@ -1073,54 +879,16 @@
       }
     }
 
-    async function loadData() {
-      if (currentUser && supabaseClient) {
-        try {
-          const { data, error } = await supabaseClient
-            .from('user_data')
-            .select('appData')
-            .eq('id', currentUser.id)
-            .maybeSingle();
-
-          if (!error && data && data.appData) {
-            appData = data.appData;
-            if (appData.vipExpiresAt) {
-              appData.vipExpiresAt = Number(appData.vipExpiresAt);
-            }
-          }
-        } catch (err) {
-          console.error("Erro ao carregar dados do Supabase:", err);
-        }
-      } else {
-        const saved = localStorage.getItem('lifeRpgData');
-        if (saved) {
-          try {
-            appData = JSON.parse(saved);
-            if (appData.vipExpiresAt) {
-              appData.vipExpiresAt = Number(appData.vipExpiresAt);
-            }
-          } catch(e){}
-        }
+    function loadData() {
+      const saved = localStorage.getItem('lifeRpgData');
+      if (saved) {
+        appData = JSON.parse(saved);
+        if (!appData.goalMoney) appData.goalMoney = 30000;
       }
-
-      if (!appData.goalMoney) appData.goalMoney = 30000;
-
       const savedSound = localStorage.getItem('lifeRpgSound');
       if (savedSound !== null) {
         soundEnabled = JSON.parse(savedSound);
         document.getElementById('soundBtn').innerText = soundEnabled ? '🔊' : '🔇';
-      }
-
-      // MARCA COMO CARREGADO PARA LIBERAR A EXECUÇÃO DO TIMER
-      isDataLoaded = true;
-
-      if (appData.isVip && appData.vipExpiresAt) {
-        if (Date.now() >= Number(appData.vipExpiresAt)) {
-          appData.isVip = false;
-          appData.vipExpiresAt = null;
-          removeVipPreset();
-          await saveData();
-        }
       }
 
       checkDailyReset();
@@ -1131,22 +899,8 @@
       renderFinance();
     }
 
-    async function saveData() {
+    function saveData() {
       localStorage.setItem('lifeRpgData', JSON.stringify(appData));
-      
-      if (currentUser && supabaseClient) {
-        try {
-          await supabaseClient
-            .from('user_data')
-            .upsert({ 
-              id: currentUser.id, 
-              appData: appData, 
-              updated_at: new Date().toISOString() 
-            });
-        } catch (err) {
-          console.error("Erro ao guardar no Supabase:", err);
-        }
-      }
     }
 
     function getXpForNextLevel(level) {
@@ -1220,13 +974,13 @@
       btn.disabled = (inputVal !== 'DELETE');
     }
 
-    async function executeDeleteStat() {
+    function executeDeleteStat() {
       if (!statKeyToDelete || !appData.stats[statKeyToDelete]) return;
 
       delete appData.stats[statKeyToDelete];
       appData.tasks = appData.tasks.filter(t => t.stat !== statKeyToDelete);
 
-      await saveData();
+      saveData();
       closeDeleteModal();
       renderStats();
       renderStatSelectOptions();
@@ -1241,7 +995,7 @@
       }
     }
 
-    async function addNewStat() {
+    function addNewStat() {
       const currentStatsCount = Object.keys(appData.stats).length;
 
       if (!appData.isVip && currentStatsCount >= FREE_STAT_LIMIT) {
@@ -1268,7 +1022,7 @@
           color: color
         };
         nameInput.value = '';
-        await saveData();
+        saveData();
         renderStats();
         renderStatSelectOptions();
       }
@@ -1313,7 +1067,7 @@
       });
     }
 
-    async function addNewTask() {
+    function addNewTask() {
       if (!appData.isVip && appData.tasks.length >= FREE_TASK_LIMIT) {
         alert("🔒 Limite de 5 tarefas atingido no plano Grátis!");
         promptVipCode();
@@ -1340,17 +1094,17 @@
 
       appData.tasks.push(newTask);
       titleInput.value = '';
-      await saveData();
+      saveData();
       renderTasks();
     }
 
-    async function deleteTask(id) {
+    function deleteTask(id) {
       appData.tasks = appData.tasks.filter(t => t.id !== id);
-      await saveData();
+      saveData();
       renderTasks();
     }
 
-    async function toggleTask(id) {
+    function toggleTask(id) {
       const task = appData.tasks.find(t => t.id === id);
       if (!task) return;
 
@@ -1377,7 +1131,7 @@
         }
       }
 
-      await saveData();
+      saveData();
       renderStats();
       renderTasks();
     }
@@ -1396,7 +1150,7 @@
       circle.style.strokeDashoffset = offset;
     }
 
-    async function changeGoalAmount() {
+    function changeGoalAmount() {
       const currentGoal = appData.goalMoney || 30000;
       const newGoalStr = prompt("Digite o novo valor da sua Meta Financeira (R$):", currentGoal);
 
@@ -1406,14 +1160,14 @@
 
       if (!isNaN(newGoal) && newGoal > 0) {
         appData.goalMoney = newGoal;
-        await saveData();
+        saveData();
         renderFinance();
       } else {
         alert("Por favor, digite um valor numérico válido.");
       }
     }
 
-    async function addFunds() {
+    function addFunds() {
       const input = document.getElementById('depositInput');
       const val = parseFloat(input.value);
 
@@ -1421,12 +1175,12 @@
         appData.savedMoney += val;
         input.value = '';
         playSound('money');
-        await saveData();
+        saveData();
         renderFinance();
       }
     }
 
-    async function withdrawFunds() {
+    function withdrawFunds() {
       const input = document.getElementById('depositInput');
       const val = parseFloat(input.value);
 
@@ -1438,10 +1192,12 @@
         appData.savedMoney -= val;
         input.value = '';
         playSound('money');
-        await saveData();
+        saveData();
         renderFinance();
       }
     }
+
+    loadData();
   </script>
 </body>
 </html>
