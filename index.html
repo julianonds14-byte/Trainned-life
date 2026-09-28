@@ -8,11 +8,12 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --accent-color: #f97316;
-            --text-color: #f8fafc;
-            --text-secondary: #94a3b8;
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --accent-color: #ff6600;
+            --text-color: #ffffff;
+            --text-secondary: #8b949e;
+            --border-color: #30363d;
             --vip-color: #eab308;
             --error-color: #ef4444;
         }
@@ -21,62 +22,83 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
             padding: 20px;
-            max-width: 600px;
+            max-width: 500px;
             margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         #auth-container {
             background-color: var(--card-bg);
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            padding: 30px 20px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
             text-align: center;
-            margin-top: 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        #auth-container h2 {
+            font-size: 1.8rem;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        #auth-container p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 25px;
         }
 
         .auth-input {
             width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 6px;
-            border: 1px solid #334155;
-            background: #0f172a;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: #0d1117;
             color: #fff;
-            font-size: 1rem;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .auth-input:focus {
+            border-color: var(--accent-color);
         }
 
         .auth-btn {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background-color: var(--accent-color);
             color: white;
             border: none;
-            border-radius: 6px;
-            font-weight: bold;
+            border-radius: 8px;
+            font-weight: 600;
             font-size: 1rem;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
         .btn-secondary {
             background-color: transparent;
-            border: 2px solid var(--accent-color);
+            border: 1px solid var(--accent-color);
             color: var(--accent-color);
+            margin-top: 12px;
         }
 
         #status-msg {
             margin-top: 15px;
-            font-size: 0.95rem;
-            min-height: 25px;
+            font-size: 0.85rem;
+            min-height: 20px;
             word-break: break-word;
-            font-weight: bold;
         }
 
         #app-container {
@@ -88,8 +110,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            border-bottom: 1px solid #334155;
             padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .vip-badge {
@@ -104,6 +126,7 @@
 
         .card {
             background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
@@ -117,13 +140,14 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 5px;
+            font-size: 0.9rem;
         }
 
         .progress-bar {
             width: 100%;
-            height: 10px;
-            background-color: #334155;
-            border-radius: 5px;
+            height: 8px;
+            background-color: #21262d;
+            border-radius: 4px;
             overflow: hidden;
         }
 
@@ -137,10 +161,11 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background-color: #334155;
+            background-color: #21262d;
             padding: 12px;
             border-radius: 8px;
             margin-bottom: 10px;
+            font-size: 0.9rem;
         }
 
         .task-item.completed {
@@ -153,34 +178,31 @@
             border: none;
             color: white;
             padding: 6px 12px;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
-        }
-
-        .vip-section {
-            border: 1px solid var(--vip-color);
-            background: rgba(234, 179, 8, 0.05);
+            font-size: 0.85rem;
         }
 
         .logout-btn {
             background: transparent;
-            border: 1px solid #ef4444;
-            color: #ef4444;
+            border: 1px solid var(--error-color);
+            color: var(--error-color);
             padding: 6px 12px;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
+            font-size: 0.85rem;
         }
     </style>
 </head>
 <body>
 
-    <!-- ECRÃ DE LOGIN / REGISTO -->
+    <!-- ECRÃ DE LOGIN ORIGINAL -->
     <div id="auth-container">
         <h2>Life RPG</h2>
-        <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.9rem;">Acesse a sua conta ou registe-se</p>
+        <p>Acesse a sua conta ou registe-se</p>
         
-        <input type="email" id="auth-email" class="auth-input" placeholder="O seu e-mail">
-        <input type="password" id="auth-password" class="auth-input" placeholder="A sua palavra-passe (mínimo 6 caracteres)">
+        <input type="email" id="auth-email" class="auth-input" placeholder="julianonds14@gmail.com">
+        <input type="password" id="auth-password" class="auth-input" placeholder="••••••••••••">
         
         <button class="auth-btn" onclick="handleLogin()">Entrar</button>
         <button class="auth-btn btn-secondary" onclick="handleSignUp()">Cadastrar Nova Conta</button>
@@ -198,20 +220,17 @@
             <button class="logout-btn" onclick="handleLogout()">Sair</button>
         </header>
 
-        <!-- ATRIBUTOS -->
         <div class="card">
             <h3>Atributos</h3>
             <div id="stats-container" style="margin-top: 15px;"></div>
         </div>
 
-        <!-- TAREFAS -->
         <div class="card">
             <h3>Rotina Diária</h3>
             <div id="tasks-container" style="margin-top: 15px;"></div>
         </div>
 
-        <!-- CÓDIGO VIP -->
-        <div class="card vip-section">
+        <div class="card">
             <h3 style="color: var(--vip-color);">Ativar Código VIP</h3>
             <div style="display:flex; gap: 10px; margin-top: 10px;">
                 <input type="text" id="vip-code-input" class="auth-input" style="margin:0;" placeholder="Insira seu código VIP">
@@ -241,10 +260,10 @@
                     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                     checkSession();
                 } else {
-                    showStatus('Erro: Biblioteca do Supabase não carregou. Verifique a sua ligação.', true);
+                    showStatus('Erro: Supabase não carregou.', true);
                 }
             } catch (err) {
-                showStatus('Erro de Inicialização: ' + err.message, true);
+                showStatus('Erro: ' + err.message, true);
             }
         };
 
@@ -252,7 +271,7 @@
             is_vip: false,
             vip_expires_at: 0,
             stats: {
-                forca: { name: "Força", level: 1, xp: 0, color: "#f97316" },
+                forca: { name: "Força", level: 1, xp: 0, color: "#ff6600" },
                 inteligencia: { name: "Inteligência", level: 1, xp: 0, color: "#3b82f6" },
                 saude: { name: "Saúde", level: 1, xp: 0, color: "#22c55e" }
             },
@@ -266,33 +285,26 @@
         let userData = JSON.parse(JSON.stringify(defaultData));
 
         async function handleLogin() {
-            showStatus('A processar login...');
+            showStatus('Entrando...');
             const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value.trim();
 
             if (!email || !password) {
-                showStatus('Preencha o e-mail e a palavra-passe.', true);
-                return;
-            }
-
-            if (!supabaseClient) {
-                showStatus('Erro: Supabase não está pronto.', true);
+                showStatus('Preencha e-mail e palavra-passe.', true);
                 return;
             }
 
             try {
                 const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-
                 if (error) {
-                    showStatus('Erro no Login: ' + error.message, true);
+                    showStatus('Erro: ' + error.message, true);
                     return;
                 }
-
                 currentUser = data.user;
                 await loadUserData();
                 showAppInterface();
             } catch (e) {
-                showStatus('Exceção no Login: ' + e.message, true);
+                showStatus('Erro ao entrar: ' + e.message, true);
             }
         }
 
@@ -311,27 +323,20 @@
                 return;
             }
 
-            if (!supabaseClient) {
-                showStatus('Erro: Supabase não está pronto.', true);
-                return;
-            }
-
             try {
                 const { data, error } = await supabaseClient.auth.signUp({ email, password });
-
                 if (error) {
-                    showStatus('Erro no Registo: ' + error.message, true);
+                    showStatus('Erro: ' + error.message, true);
                     return;
                 }
-
                 if (data.user) {
                     currentUser = data.user;
                     await initUserData(currentUser.id);
-                    showStatus('Conta criada! A carregar...');
+                    showStatus('Conta criada!');
                     showAppInterface();
                 }
             } catch (e) {
-                showStatus('Exceção no Cadastro: ' + e.message, true);
+                showStatus('Erro ao registar: ' + e.message, true);
             }
         }
 
@@ -349,7 +354,6 @@
             const { data } = await supabaseClient.from('user_data').select('*').eq('id', currentUser.id).single();
             if (data) {
                 userData = data;
-                checkVipExpiration();
                 renderApp();
             } else {
                 await initUserData(currentUser.id);
@@ -361,16 +365,6 @@
         async function saveUserData() {
             if (!currentUser || !supabaseClient) return;
             await supabaseClient.from('user_data').update(userData).eq('id', currentUser.id);
-        }
-
-        function checkVipExpiration() {
-            if (userData.is_vip && userData.vip_expires_at > 0 && Date.now() > userData.vip_expires_at) {
-                userData.is_vip = false;
-                userData.vip_expires_at = 0;
-                removeVipFeatures();
-                saveUserData();
-                alert('O seu período VIP expirou.');
-            }
         }
 
         function activateVipCode() {
@@ -387,34 +381,9 @@
 
             userData.is_vip = true;
             userData.vip_expires_at = Date.now() + (durationDays * 24 * 60 * 60 * 1000);
-            injectVipFeatures();
             saveUserData();
             renderApp();
-            alert(`Código VIP ativado com sucesso por ${durationDays} dias!`);
-        }
-
-        function injectVipFeatures() {
-            if (!userData.stats.carisma) userData.stats.carisma = { name: "Carisma", level: 1, xp: 0, color: "#eab308" };
-            if (!userData.stats.disciplina) userData.stats.disciplina = { name: "Disciplina", level: 1, xp: 0, color: "#a855f7" };
-            if (!userData.stats.foco) userData.stats.foco = { name: "Foco", level: 1, xp: 0, color: "#06b6d4" };
-
-            const vipTasks = [
-                { id: 101, title: "💧 Beber 3L de Água", stat: "saude", xpReward: 20, completed: false },
-                { id: 102, title: "🗣️ Treinar Oratória", stat: "carisma", xpReward: 30, completed: false },
-                { id: 103, title: "📋 Cumprir Rotina", stat: "disciplina", xpReward: 35, completed: false },
-                { id: 104, title: "🧊 Tomar banho gelado", stat: "foco", xpReward: 25, completed: false }
-            ];
-
-            vipTasks.forEach(vt => {
-                if (!userData.tasks.some(t => t.id === vt.id)) userData.tasks.push(vt);
-            });
-        }
-
-        function removeVipFeatures() {
-            delete userData.stats.carisma;
-            delete userData.stats.disciplina;
-            delete userData.stats.foco;
-            userData.tasks = userData.tasks.filter(t => t.id < 100);
+            alert(`VIP ativado por ${durationDays} dias!`);
         }
 
         function renderApp() {
@@ -462,7 +431,7 @@
                 if (stat.xp >= 100) {
                     stat.level += 1;
                     stat.xp -= 100;
-                    alert(`Parabéns! Subiu para o Nível ${stat.level} em ${stat.name}!`);
+                    alert(`Nível ${stat.level} em ${stat.name}!`);
                 }
             }
             saveUserData();
