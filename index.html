@@ -966,7 +966,8 @@
       if (!appData.isVip || !appData.vipExpiresAt) return;
 
       const now = Date.now();
-      const timeLeftMs = appData.vipExpiresAt - now;
+      const expiresAt = Number(appData.vipExpiresAt);
+      const timeLeftMs = expiresAt - now;
 
       if (timeLeftMs <= 0) {
         appData.isVip = false;
@@ -1031,7 +1032,7 @@
         const durationMs = VIP_CODES[cleanCode];
         
         appData.isVip = true;
-        appData.vipExpiresAt = Date.now() + durationMs;
+        appData.vipExpiresAt = Number(Date.now() + durationMs);
         
         injectVipPreset();
 
@@ -1081,6 +1082,9 @@
 
           if (!error && data && data.appData) {
             appData = data.appData;
+            if (appData.vipExpiresAt) {
+              appData.vipExpiresAt = Number(appData.vipExpiresAt);
+            }
           }
         } catch (err) {
           console.error("Erro ao carregar dados do Supabase:", err);
@@ -1090,6 +1094,9 @@
         if (saved) {
           try {
             appData = JSON.parse(saved);
+            if (appData.vipExpiresAt) {
+              appData.vipExpiresAt = Number(appData.vipExpiresAt);
+            }
           } catch(e){}
         }
       }
@@ -1100,6 +1107,15 @@
       if (savedSound !== null) {
         soundEnabled = JSON.parse(savedSound);
         document.getElementById('soundBtn').innerText = soundEnabled ? '🔊' : '🔇';
+      }
+
+      if (appData.isVip && appData.vipExpiresAt) {
+        if (Date.now() >= Number(appData.vipExpiresAt)) {
+          appData.isVip = false;
+          appData.vipExpiresAt = null;
+          removeVipPreset();
+          await saveData();
+        }
       }
 
       checkDailyReset();
