@@ -796,7 +796,7 @@
       }
     });
 
-    // LÓGICA ORIGINAL DO APLICATIVO
+    // LÓGICA DO APLICATIVO
     const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 70;
 
     const VIP_CODES = {
@@ -950,16 +950,13 @@
       });
     }
 
-    // REMOVE ATRIBUTOS E TAREFAS VIP AO EXPIRAR
     function removeVipPreset() {
-      // Remove as tarefas criadas pelo VIP
       appData.tasks = appData.tasks.filter(task => {
         const isVipTitle = VIP_TASKS_TITLES.some(vt => vt.toLowerCase() === task.title.toLowerCase());
         const isVipStatTask = VIP_STATS_KEYS.includes(task.stat);
         return !isVipTitle && !isVipStatTask;
       });
 
-      // Remove os atributos VIP
       VIP_STATS_KEYS.forEach(key => {
         delete appData.stats[key];
       });
@@ -1006,7 +1003,7 @@
 
     setInterval(checkVipTimer, 1000);
 
-    function promptVipCode() {
+    async function promptVipCode() {
       if (appData.isVip) {
         const disable = confirm("Sua assinatura VIP está ativa. Deseja cancelar agora?");
         if (disable) {
@@ -1015,7 +1012,7 @@
           
           removeVipPreset();
 
-          saveData();
+          await saveData();
           alert("Status VIP cancelado!");
           updateVipUI();
           renderStats();
@@ -1038,7 +1035,7 @@
         
         injectVipPreset();
 
-        saveData();
+        await saveData();
         playSound('levelup');
 
         if (cleanCode === 'VIPTEST10') {
@@ -1075,14 +1072,25 @@
 
     async function loadData() {
       if (currentUser && supabaseClient) {
-        const { data } = await supabaseClient.from('user_data').select('*').eq('id', currentUser.id).single();
-        if (data && data.appData) {
-          appData = data.appData;
+        try {
+          const { data, error } = await supabaseClient
+            .from('user_data')
+            .select('appData')
+            .eq('id', currentUser.id)
+            .maybeSingle();
+
+          if (!error && data && data.appData) {
+            appData = data.appData;
+          }
+        } catch (err) {
+          console.error("Erro ao carregar dados do Supabase:", err);
         }
       } else {
         const saved = localStorage.getItem('lifeRpgData');
         if (saved) {
-          appData = JSON.parse(saved);
+          try {
+            appData = JSON.parse(saved);
+          } catch(e){}
         }
       }
 
@@ -1106,7 +1114,17 @@
       localStorage.setItem('lifeRpgData', JSON.stringify(appData));
       
       if (currentUser && supabaseClient) {
-        await supabaseClient.from('user_data').upsert({ id: currentUser.id, appData: appData });
+        try {
+          await supabaseClient
+            .from('user_data')
+            .upsert({ 
+              id: currentUser.id, 
+              appData: appData, 
+              updated_at: new Date().toISOString() 
+            });
+        } catch (err) {
+          console.error("Erro ao guardar no Supabase:", err);
+        }
       }
     }
 
@@ -1181,13 +1199,13 @@
       btn.disabled = (inputVal !== 'DELETE');
     }
 
-    function executeDeleteStat() {
+    async function executeDeleteStat() {
       if (!statKeyToDelete || !appData.stats[statKeyToDelete]) return;
 
       delete appData.stats[statKeyToDelete];
       appData.tasks = appData.tasks.filter(t => t.stat !== statKeyToDelete);
 
-      saveData();
+      await saveData();
       closeDeleteModal();
       renderStats();
       renderStatSelectOptions();
@@ -1202,7 +1220,7 @@
       }
     }
 
-    function addNewStat() {
+    async function addNewStat() {
       const currentStatsCount = Object.keys(appData.stats).length;
 
       if (!appData.isVip && currentStatsCount >= FREE_STAT_LIMIT) {
@@ -1229,7 +1247,7 @@
           color: color
         };
         nameInput.value = '';
-        saveData();
+        await saveData();
         renderStats();
         renderStatSelectOptions();
       }
@@ -1274,7 +1292,7 @@
       });
     }
 
-    function addNewTask() {
+    async function addNewTask() {
       if (!appData.isVip && appData.tasks.length >= FREE_TASK_LIMIT) {
         alert("🔒 Limite de 5 tarefas atingido no plano Grátis!");
         promptVipCode();
@@ -1301,17 +1319,17 @@
 
       appData.tasks.push(newTask);
       titleInput.value = '';
-      saveData();
+      await saveData();
       renderTasks();
     }
 
-    function deleteTask(id) {
+    async function deleteTask(id) {
       appData.tasks = appData.tasks.filter(t => t.id !== id);
-      saveData();
+      await saveData();
       renderTasks();
     }
 
-    function toggleTask(id) {
+    async function toggleTask(id) {
       const task = appData.tasks.find(t => t.id === id);
       if (!task) return;
 
@@ -1338,7 +1356,7 @@
         }
       }
 
-      saveData();
+      await saveData();
       renderStats();
       renderTasks();
     }
@@ -1357,7 +1375,7 @@
       circle.style.strokeDashoffset = offset;
     }
 
-    function changeGoalAmount() {
+    async function changeGoalAmount() {
       const currentGoal = appData.goalMoney || 30000;
       const newGoalStr = prompt("Digite o novo valor da sua Meta Financeira (R$):", currentGoal);
 
@@ -1367,14 +1385,14 @@
 
       if (!isNaN(newGoal) && newGoal > 0) {
         appData.goalMoney = newGoal;
-        saveData();
+        await saveData();
         renderFinance();
       } else {
         alert("Por favor, digite um valor numérico válido.");
       }
     }
 
-    function addFunds() {
+    async function addFunds() {
       const input = document.getElementById('depositInput');
       const val = parseFloat(input.value);
 
@@ -1382,12 +1400,12 @@
         appData.savedMoney += val;
         input.value = '';
         playSound('money');
-        saveData();
+        await saveData();
         renderFinance();
       }
     }
 
-    function withdrawFunds() {
+    async function withdrawFunds() {
       const input = document.getElementById('depositInput');
       const val = parseFloat(input.value);
 
@@ -1399,7 +1417,7 @@
         appData.savedMoney -= val;
         input.value = '';
         playSound('money');
-        saveData();
+        await saveData();
         renderFinance();
       }
     }
