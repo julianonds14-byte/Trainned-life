@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Life RPG & Finanças</title>
-  <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
@@ -21,577 +20,85 @@
       --accent-red: #ef4444;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      padding: 16px;
-      max-width: 480px;
-      margin: 0 auto;
-      padding-bottom: 80px;
-      min-height: 100vh;
-    }
-
-    #auth-screen {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      min-height: 80vh;
-    }
-
-    .auth-card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 24px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      text-align: center;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-    }
-
-    .auth-card h2 {
-      font-size: 1.6rem;
-      letter-spacing: 1px;
-    }
-
-    .auth-card p {
-      color: var(--text-dim);
-      font-size: 0.85rem;
-      margin-top: -8px;
-      margin-bottom: 8px;
-    }
-
-    .auth-btn {
-      width: 100%;
-      background-color: var(--accent-green);
-      color: #000;
-      border: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-weight: 700;
-      cursor: pointer;
-      font-size: 0.95rem;
-    }
-
-    .auth-btn-secondary {
-      background-color: transparent;
-      border: 1px solid var(--card-border);
-      color: var(--text);
-    }
-
-    #auth-status-msg {
-      font-size: 0.85rem;
-      min-height: 20px;
-      word-break: break-word;
-    }
-
-    #app-screen {
-      display: none;
-    }
-
-    header {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
-      margin-bottom: 24px;
-      padding-top: 36px;
-    }
-
-    header h1 {
-      font-size: 1.5rem;
-      letter-spacing: 1px;
-      margin-bottom: 2px;
-      text-align: center;
-    }
-
-    header p {
-      color: var(--text-dim);
-      font-size: 0.85rem;
-      text-align: center;
-    }
-
-    .header-btns {
-      position: absolute;
-      top: 0;
-      right: 0;
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .sound-toggle-btn, .vip-badge-btn, .logout-btn {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      color: var(--text);
-      border-radius: 10px;
-      padding: 5px 8px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    .logout-btn {
-      border-color: var(--accent-red);
-      color: var(--accent-red);
-    }
-
-    .vip-badge-btn.active {
-      border-color: var(--accent-yellow);
-      color: var(--accent-yellow);
-      font-weight: bold;
-    }
-
-    .section-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin: 20px 0 12px 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .limit-badge {
-      font-size: 0.75rem;
-      color: var(--accent-yellow);
-      font-weight: normal;
-    }
-
-    .stats-card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .stat-row {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .stat-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.9rem;
-      font-weight: 600;
-    }
-
-    .stat-title-group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .btn-trash {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 0.9rem;
-      opacity: 0.7;
-      padding: 2px 4px;
-    }
-
-    .btn-trash:hover {
-      opacity: 1;
-    }
-
-    .stat-bar-bg {
-      height: 8px;
-      background-color: #262a36;
-      border-radius: 4px;
-      overflow: hidden;
-    }
-
-    .stat-bar-fill {
-      height: 100%;
-      width: 0%;
-      border-radius: 4px;
-      transition: width 0.4s ease;
-    }
-
-    .add-card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-
-    .input-field, select {
-      width: 100%;
-      background-color: var(--bg);
-      border: 1px solid var(--card-border);
-      color: var(--text);
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      outline: none;
-    }
-
-    .form-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    input[type="color"] {
-      width: 44px;
-      height: 42px;
-      padding: 2px;
-      background: var(--bg);
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .tasks-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .task-item {
-      background-color: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      transition: all 0.2s;
-    }
-
-    .task-item.completed {
-      opacity: 0.5;
-    }
-
-    .task-item.completed .task-title {
-      text-decoration: line-through;
-    }
-
-    .task-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex: 1;
-      cursor: pointer;
-    }
-
-    .checkbox {
-      width: 22px;
-      height: 22px;
-      border-radius: 6px;
-      border: 2px solid var(--text-dim);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 0.8rem;
-    }
-
-    .task-item.completed .checkbox {
-      background-color: var(--accent-green);
-      border-color: var(--accent-green);
-      color: #000;
-    }
-
-    .task-info {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .task-title {
-      font-size: 0.95rem;
-      font-weight: 600;
-    }
-
-    .task-reward {
-      font-size: 0.75rem;
-      color: var(--text-dim);
-    }
-
-    .delete-btn {
-      background: none;
-      border: none;
-      color: var(--text-dim);
-      font-size: 1.1rem;
-      cursor: pointer;
-      padding: 4px 8px;
-      border-radius: 6px;
-    }
-
-    .delete-btn:hover {
-      color: var(--accent-red);
-    }
-
-    .reset-day-btn {
-      width: 100%;
-      margin-top: 12px;
-      background-color: transparent;
-      border: 1px dashed var(--card-border);
-      color: var(--text-dim);
-      padding: 10px;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .reset-day-btn:hover {
-      border-color: var(--accent-blue);
-      color: var(--accent-blue);
-    }
-
-    .finance-card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .chart-container {
-      position: relative;
-      width: 160px;
-      height: 160px;
-    }
-
-    .chart-container svg {
-      transform: rotate(-90deg);
-      width: 100%;
-      height: 100%;
-    }
-
-    .chart-bg {
-      fill: none;
-      stroke: #262a36;
-      stroke-width: 12;
-    }
-
-    .chart-progress {
-      fill: none;
-      stroke: var(--accent-green);
-      stroke-width: 12;
-      stroke-dasharray: 440;
-      stroke-dashoffset: 440;
-      stroke-linecap: round;
-      transition: stroke-dashoffset 0.6s ease;
-    }
-
-    .chart-text {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-    }
-
-    .chart-percent {
-      font-size: 1.6rem;
-      font-weight: 800;
-      color: var(--accent-green);
-    }
-
-    .chart-subtitle {
-      font-size: 0.7rem;
-      color: var(--text-dim);
-    }
-
-    .finance-inputs {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .input-group {
-      display: flex;
-      gap: 8px;
-    }
-
-    .finance-summary-grid {
-      width: 100%;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      padding-top: 12px;
-      border-top: 1px solid var(--card-border);
-    }
-
-    .summary-box {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .summary-box.right {
-      text-align: right;
-    }
-
-    .summary-label {
-      font-size: 0.75rem;
-      color: var(--text-dim);
-      margin-bottom: 2px;
-    }
-
-    .summary-value {
-      font-size: 1rem;
-      font-weight: bold;
-      color: var(--text);
-    }
-
-    .edit-goal-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 0.75rem;
-      margin-left: 2px;
-    }
-
-    button {
-      background-color: var(--accent-green);
-      color: #000;
-      border: none;
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-
-    button:disabled {
-      background-color: #333a4d !important;
-      color: #717b94 !important;
-      cursor: not-allowed;
-    }
-
-    button.btn-withdraw {
-      background-color: #311c22;
-      color: var(--accent-red);
-      border: 1px solid #52232a;
-    }
-
-    button:hover:not(:disabled) {
-      opacity: 0.9;
-    }
-
-    .vip-banner {
-      background: linear-gradient(135deg, #2b1f0d, #1a1d26);
-      border: 1px solid var(--accent-yellow);
-      border-radius: 16px;
-      padding: 16px;
-      margin-top: 24px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .vip-banner h3 {
-      color: var(--accent-yellow);
-      font-size: 1.1rem;
-    }
-
-    .vip-banner p {
-      font-size: 0.85rem;
-      color: var(--text-dim);
-    }
-
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(5px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      padding: 16px;
-    }
-
-    .modal-card {
-      background-color: var(--card-bg);
-      border: 2px solid var(--accent-red);
-      border-radius: 16px;
-      padding: 20px;
-      max-width: 400px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .modal-title {
-      font-size: 1.1rem;
-      color: var(--accent-red);
-      font-weight: bold;
-    }
-
-    .modal-body {
-      font-size: 0.85rem;
-      color: var(--text-dim);
-      line-height: 1.4;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 8px;
-      justify-content: flex-end;
-      margin-top: 6px;
-    }
-
-    .btn-danger {
-      background-color: var(--accent-red);
-      color: #fff;
-    }
-
-    .btn-secondary {
-      background-color: transparent;
-      border: 1px solid var(--card-border);
-      color: var(--text-dim);
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 16px; max-width: 480px; margin: 0 auto; padding-bottom: 80px; min-height: 100vh; }
+    #auth-screen { display: flex; flex-direction: column; justify-content: center; min-height: 80vh; }
+    .auth-card { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 24px 20px; display: flex; flex-direction: column; gap: 16px; text-align: center; }
+    .auth-card h2 { font-size: 1.6rem; }
+    .auth-card p { color: var(--text-dim); font-size: 0.85rem; margin-top: -8px; }
+    .auth-btn { width: 100%; background-color: var(--accent-green); color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    .auth-btn-secondary { background-color: transparent; border: 1px solid var(--card-border); color: var(--text); }
+    #auth-status-msg { font-size: 0.85rem; min-height: 20px; }
+    #app-screen { display: none; }
+    header { display: flex; flex-direction: column; align-items: center; position: relative; margin-bottom: 24px; padding-top: 36px; }
+    header h1 { font-size: 1.5rem; }
+    header p { color: var(--text-dim); font-size: 0.85rem; }
+    .header-btns { position: absolute; top: 0; right: 0; display: flex; gap: 6px; }
+    .sound-toggle-btn, .vip-badge-btn, .logout-btn { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text); border-radius: 10px; padding: 5px 8px; font-size: 0.8rem; cursor: pointer; }
+    .logout-btn { border-color: var(--accent-red); color: var(--accent-red); }
+    .vip-badge-btn.active { border-color: var(--accent-yellow); color: var(--accent-yellow); font-weight: bold; }
+    .section-title { font-size: 1.1rem; font-weight: 700; margin: 20px 0 12px 0; display: flex; justify-content: space-between; }
+    .limit-badge { font-size: 0.75rem; color: var(--accent-yellow); }
+    .stats-card, .add-card, .finance-card { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+    .stat-row { display: flex; flex-direction: column; gap: 6px; }
+    .stat-header { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600; }
+    .stat-title-group { display: flex; align-items: center; gap: 6px; }
+    .btn-trash { background: none; border: none; cursor: pointer; font-size: 0.9rem; opacity: 0.7; }
+    .stat-bar-bg { height: 8px; background-color: #262a36; border-radius: 4px; overflow: hidden; }
+    .stat-bar-fill { height: 100%; width: 0%; border-radius: 4px; transition: width 0.4s ease; }
+    .input-field, select { width: 100%; background-color: var(--bg); border: 1px solid var(--card-border); color: var(--text); padding: 10px 14px; border-radius: 8px; font-size: 0.9rem; outline: none; }
+    .form-row { display: flex; gap: 8px; }
+    input[type="color"] { width: 44px; height: 42px; padding: 2px; background: var(--bg); border: 1px solid var(--card-border); border-radius: 8px; cursor: pointer; }
+    .tasks-list { display: flex; flex-direction: column; gap: 10px; }
+    .task-item { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+    .task-item.completed { opacity: 0.5; }
+    .task-item.completed .task-title { text-decoration: line-through; }
+    .task-left { display: flex; align-items: center; gap: 12px; flex: 1; cursor: pointer; }
+    .checkbox { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--text-dim); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; }
+    .task-item.completed .checkbox { background-color: var(--accent-green); border-color: var(--accent-green); color: #000; }
+    .task-info { display: flex; flex-direction: column; }
+    .task-title { font-size: 0.95rem; font-weight: 600; }
+    .task-reward { font-size: 0.75rem; color: var(--text-dim); }
+    .delete-btn { background: none; border: none; color: var(--text-dim); font-size: 1.1rem; cursor: pointer; }
+    .reset-day-btn { width: 100%; margin-top: 12px; background-color: transparent; border: 1px dashed var(--card-border); color: var(--text-dim); padding: 10px; border-radius: 12px; cursor: pointer; }
+    .chart-container { position: relative; width: 160px; height: 160px; margin: 0 auto; }
+    .chart-container svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+    .chart-bg { fill: none; stroke: #262a36; stroke-width: 12; }
+    .chart-progress { fill: none; stroke: var(--accent-green); stroke-width: 12; stroke-dasharray: 440; stroke-dashoffset: 440; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+    .chart-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+    .chart-percent { font-size: 1.6rem; font-weight: 800; color: var(--accent-green); }
+    .chart-subtitle { font-size: 0.7rem; color: var(--text-dim); }
+    .finance-summary-grid { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-top: 12px; border-top: 1px solid var(--card-border); }
+    .summary-box.right { text-align: right; }
+    .summary-label { font-size: 0.75rem; color: var(--text-dim); }
+    .summary-value { font-size: 1rem; font-weight: bold; }
+    button { background-color: var(--accent-green); color: #000; border: none; padding: 10px 14px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    button:disabled { background-color: #333a4d !important; color: #717b94 !important; cursor: not-allowed; }
+    button.btn-withdraw { background-color: #311c22; color: var(--accent-red); border: 1px solid #52232a; }
+    .vip-banner { background: linear-gradient(135deg, #2b1f0d, #1a1d26); border: 1px solid var(--accent-yellow); border-radius: 16px; padding: 16px; margin-top: 24px; text-align: center; display: flex; flex-direction: column; gap: 10px; }
+    .vip-banner h3 { color: var(--accent-yellow); }
+    .vip-banner p { font-size: 0.85rem; color: var(--text-dim); }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 16px; }
+    .modal-card { background-color: var(--card-bg); border: 2px solid var(--accent-red); border-radius: 16px; padding: 20px; max-width: 400px; width: 100%; display: flex; flex-direction: column; gap: 14px; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+    .btn-danger { background-color: var(--accent-red); color: #fff; }
+    .btn-secondary { background-color: transparent; border: 1px solid var(--card-border); color: var(--text-dim); }
   </style>
 </head>
 <body>
 
-  <!-- TELA DE AUTENTICAÇÃO -->
   <div id="auth-screen">
     <div class="auth-card">
       <h2>🎮 LIFE RPG</h2>
       <p>Acesse sua conta para sincronizar seu progresso</p>
-      
       <input type="email" id="auth-email" class="input-field" placeholder="Seu e-mail">
       <input type="password" id="auth-password" class="input-field" placeholder="Sua senha">
-      
       <button class="auth-btn" onclick="handleLogin()">Entrar</button>
       <button class="auth-btn auth-btn-secondary" onclick="handleSignUp()">Cadastrar Nova Conta</button>
-      
       <div id="auth-status-msg"></div>
     </div>
   </div>
 
-  <!-- APLICAÇÃO PRINCIPAL -->
   <div id="app-screen">
     <header>
       <div class="header-btns">
@@ -612,7 +119,7 @@
     <div class="add-card">
       <div class="form-row">
         <input type="text" id="newStatName" class="input-field" placeholder="Novo Atributo (ex: Foco)">
-        <input type="color" id="newStatColor" value="#3b82f6" title="Escolha uma cor">
+        <input type="color" id="newStatColor" value="#3b82f6">
         <button id="addStatBtn" onclick="addNewStat()">+ Atributo</button>
       </div>
     </div>
@@ -647,12 +154,10 @@
         </div>
       </div>
 
-      <div class="finance-inputs">
-        <div class="input-group">
-          <input type="number" id="depositInput" class="input-field" placeholder="Valor (R$)" min="0" step="10">
-          <button onclick="addFunds()">+ Guardar</button>
-          <button class="btn-withdraw" onclick="withdrawFunds()">- Retirar</button>
-        </div>
+      <div class="form-row" style="margin-top: 10px;">
+        <input type="number" id="depositInput" class="input-field" placeholder="Valor (R$)" min="0" step="10">
+        <button onclick="addFunds()">+ Guardar</button>
+        <button class="btn-withdraw" onclick="withdrawFunds()">- Retirar</button>
       </div>
 
       <div class="finance-summary-grid">
@@ -661,7 +166,7 @@
           <span class="summary-value" id="savedAmount">R$ 0</span>
         </div>
         <div class="summary-box right">
-          <span class="summary-label">Meta: <button class="edit-goal-btn" onclick="changeGoalAmount()" title="Alterar Meta">✏️</button></span>
+          <span class="summary-label">Meta: <button style="background:none; border:none; cursor:pointer;" onclick="changeGoalAmount()">✏️</button></span>
           <span class="summary-value" id="goalAmountText">R$ 30.000</span>
         </div>
       </div>
@@ -675,8 +180,8 @@
 
     <div class="modal-overlay" id="deleteStatModal">
       <div class="modal-card">
-        <div class="modal-title">⚠️ Excluir Atributo</div>
-        <div class="modal-body">
+        <div style="color: var(--accent-red); font-weight: bold;">⚠️ Excluir Atributo</div>
+        <div style="font-size: 0.85rem; color: var(--text-dim);">
           Deseja apagar o atributo <strong id="deleteStatNameTarget" style="color:#fff"></strong> e todas as suas tarefas?<br><br>
           Digite <strong style="color: var(--accent-red)">DELETE</strong> para confirmar:
         </div>
@@ -738,11 +243,6 @@
         return;
       }
 
-      if (password.length < 6) {
-        showAuthStatus('A senha deve ter pelo menos 6 caracteres.', true);
-        return;
-      }
-
       try {
         const { data, error } = await supabaseClient.auth.signUp({ email, password });
         if (error) {
@@ -785,91 +285,27 @@
         if (window.supabase && window.supabase.createClient) {
           supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
           checkSession();
-        } else {
-          showAuthStatus('Erro ao carregar SDK do Supabase.', true);
         }
       } catch (err) {
-        showAuthStatus('Erro: ' + err.message, true);
+        showAuthStatus('Erro ao iniciar Supabase', true);
       }
     });
 
     const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 70;
-
     const VIP_CODES = {
-      "VIPTEST10": 1 * 60 * 1000,                  // 1 Minuto
-      "VIPMENSAL3030": 30 * 24 * 60 * 60 * 1000,   // 30 Dias
-      "VIPANUAL365DIAS10": 365 * 24 * 60 * 60 * 1000 // 365 Dias
+      "VIPTEST10": 1 * 60 * 1000,
+      "VIPMENSAL3030": 30 * 24 * 60 * 60 * 1000,
+      "VIPANUAL365DIAS10": 365 * 24 * 60 * 60 * 1000
     };
 
     const VIP_STATS_KEYS = ['carisma', 'disciplina', 'foco'];
-    const VIP_TASKS_TITLES = [
-      '💧 Beber 3L de Água',
-      '🗣️ Treinar Oratória / Socializar',
-      '🎯 Cumprir Rotina sem Procrastinar',
-      '🥶 Tomar banho gelado'
-    ];
-
+    const VIP_TASKS_TITLES = ['💧 Beber 3L de Água', '🗣️ Treinar Oratória / Socializar', '🎯 Cumprir Rotina sem Procrastinar', '🥶 Tomar banho gelado'];
     const FREE_STAT_LIMIT = 3;
     const FREE_TASK_LIMIT = 5;
 
     let soundEnabled = true;
     let audioCtx = null;
     let statKeyToDelete = null;
-
-    function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-    }
-
-    document.addEventListener('touchstart', initAudio, { once: true });
-    document.addEventListener('click', initAudio, { once: true });
-
-    function playTone(freq, type, duration, delay = 0, vol = 0.3) {
-      if (!soundEnabled) return;
-      initAudio();
-      
-      setTimeout(() => {
-        try {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.type = type;
-          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-          gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start();
-          osc.stop(audioCtx.currentTime + duration);
-        } catch(e){}
-      }, delay);
-    }
-
-    function playSound(type) {
-      if (!soundEnabled) return;
-      if (type === 'check') {
-        playTone(987.77, 'sine', 0.08, 0, 0.4);
-        playTone(1318.51, 'sine', 0.20, 60, 0.5);
-      } else if (type === 'levelup') {
-        playTone(523.25, 'sine', 0.1, 0, 0.4);
-        playTone(659.25, 'sine', 0.1, 80, 0.4);
-        playTone(783.99, 'sine', 0.1, 160, 0.4);
-        playTone(1046.50, 'sine', 0.3, 240, 0.5);
-      } else if (type === 'money') {
-        playTone(1567.98, 'sine', 0.08, 0, 0.35);
-        playTone(2093.00, 'sine', 0.25, 60, 0.45);
-      }
-    }
-
-    function toggleSound() {
-      soundEnabled = !soundEnabled;
-      document.getElementById('soundBtn').innerText = soundEnabled ? '🔊' : '🔇';
-      localStorage.setItem('lifeRpgSound', JSON.stringify(soundEnabled));
-      if (soundEnabled) playSound('check');
-    }
 
     let appData = {
       isVip: false,
@@ -889,6 +325,44 @@
       ]
     };
 
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+    document.addEventListener('touchstart', initAudio, { once: true });
+    document.addEventListener('click', initAudio, { once: true });
+
+    function playTone(freq, type, duration, delay = 0, vol = 0.3) {
+      if (!soundEnabled) return;
+      initAudio();
+      setTimeout(() => {
+        try {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+          gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + duration);
+        } catch(e){}
+      }, delay);
+    }
+
+    function playSound(type) {
+      if (!soundEnabled) return;
+      if (type === 'check') playTone(1318.51, 'sine', 0.20, 0, 0.5);
+      else if (type === 'levelup') playTone(1046.50, 'sine', 0.3, 0, 0.5);
+      else if (type === 'money') playTone(2093.00, 'sine', 0.25, 0, 0.45);
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById('soundBtn').innerText = soundEnabled ? '🔊' : '🔇';
+    }
+
     function checkDailyReset() {
       const today = new Date().toDateString();
       if (appData.lastDate !== today) {
@@ -899,7 +373,7 @@
     }
 
     function resetDayManually() {
-      if (confirm("Deseja renovar todos os hábitos para o dia de hoje?")) {
+      if (confirm("Deseja renovar todos os hábitos para hoje?")) {
         appData.tasks.forEach(t => t.completed = false);
         appData.lastDate = new Date().toDateString();
         saveData();
@@ -913,103 +387,53 @@
         { key: 'disciplina', name: 'Disciplina', color: '#ef4444' },
         { key: 'foco', name: 'Foco', color: '#eab308' }
       ];
-
       vipStats.forEach(st => {
         if (!appData.stats[st.key]) {
-          appData.stats[st.key] = {
-            name: st.name,
-            level: 1,
-            xp: 0,
-            color: st.color
-          };
+          appData.stats[st.key] = { name: st.name, level: 1, xp: 0, color: st.color };
         }
       });
-
       const vipTasks = [
         { title: '💧 Beber 3L de Água', stat: 'saude', xpReward: 15 },
         { title: '🗣️ Treinar Oratória / Socializar', stat: 'carisma', xpReward: 20 },
         { title: '🎯 Cumprir Rotina sem Procrastinar', stat: 'disciplina', xpReward: 30 },
         { title: '🥶 Tomar banho gelado', stat: 'disciplina', xpReward: 20 }
       ];
-
       vipTasks.forEach(vt => {
-        const alreadyExists = appData.tasks.some(t => t.title.toLowerCase() === vt.title.toLowerCase());
-        if (!alreadyExists) {
-          appData.tasks.push({
-            id: Date.now() + Math.random(),
-            title: vt.title,
-            stat: vt.stat,
-            xpReward: vt.xpReward,
-            completed: false
-          });
+        if (!appData.tasks.some(t => t.title.toLowerCase() === vt.title.toLowerCase())) {
+          appData.tasks.push({ id: Date.now() + Math.random(), title: vt.title, stat: vt.stat, xpReward: vt.xpReward, completed: false });
         }
       });
     }
 
     function removeVipPreset() {
-      appData.tasks = appData.tasks.filter(task => {
-        const isVipTitle = VIP_TASKS_TITLES.some(vt => vt.toLowerCase() === task.title.toLowerCase());
-        const isVipStatTask = VIP_STATS_KEYS.includes(task.stat);
-        return !isVipTitle && !isVipStatTask;
-      });
-
-      VIP_STATS_KEYS.forEach(key => {
-        delete appData.stats[key];
-      });
+      appData.tasks = appData.tasks.filter(task => !VIP_TASKS_TITLES.some(vt => vt.toLowerCase() === task.title.toLowerCase()) && !VIP_STATS_KEYS.includes(task.stat));
+      VIP_STATS_KEYS.forEach(key => delete appData.stats[key]);
     }
 
     function checkVipTimer() {
       if (!appData.isVip || !appData.vipExpiresAt) return;
-
-      const now = Date.now();
-      const timeLeftMs = appData.vipExpiresAt - now;
-
+      const timeLeftMs = appData.vipExpiresAt - Date.now();
       if (timeLeftMs <= 0) {
         appData.isVip = false;
         appData.vipExpiresAt = null;
-        
         removeVipPreset();
-
         saveData();
         updateVipUI();
         renderStats();
         renderStatSelectOptions();
         renderTasks();
-        alert("⏰ Seu período VIP expirou! O aplicativo voltou para o plano Grátis e os recursos VIP extras foram removidos.");
-      } else {
-        const vipBtn = document.getElementById('vipStatusBtn');
-        if (vipBtn) {
-          const totalSecs = Math.ceil(timeLeftMs / 1000);
-          
-          if (totalSecs <= 120) {
-            vipBtn.innerText = `👑 VIP (${totalSecs}s)`;
-          } else {
-            const days = Math.floor(totalSecs / (24 * 3600));
-            const hours = Math.floor((totalSecs % (24 * 3600)) / 3600);
-            if (days > 0) {
-              vipBtn.innerText = `👑 VIP (${days}d ${hours}h)`;
-            } else {
-              const mins = Math.floor((totalSecs % 3600) / 60);
-              vipBtn.innerText = `👑 VIP (${mins}m)`;
-            }
-          }
-        }
+        alert("⏰ Seu VIP expirou!");
       }
     }
-
     setInterval(checkVipTimer, 1000);
 
     async function promptVipCode() {
       if (appData.isVip) {
-        const disable = confirm("Sua assinatura VIP está ativa. Deseja cancelar agora?");
-        if (disable) {
+        if (confirm("Sua assinatura VIP está ativa. Deseja cancelar agora?")) {
           appData.isVip = false;
           appData.vipExpiresAt = null;
-          
           removeVipPreset();
-
           await saveData();
-          alert("Status VIP cancelado!");
           updateVipUI();
           renderStats();
           renderStatSelectOptions();
@@ -1020,32 +444,21 @@
 
       const inputCode = prompt("Digite o código de acesso VIP:");
       if (!inputCode) return;
-
       const cleanCode = inputCode.trim().toUpperCase();
 
       if (VIP_CODES[cleanCode]) {
-        const durationMs = VIP_CODES[cleanCode];
-        
         appData.isVip = true;
-        appData.vipExpiresAt = Date.now() + durationMs;
-        
+        appData.vipExpiresAt = Date.now() + VIP_CODES[cleanCode];
         injectVipPreset();
-
-        await saveData();
-        playSound('levelup');
-
-        if (cleanCode === 'VIPTEST10') {
-          alert("🎉 VIP de Teste ativado por 1 MINUTO!");
-        } else if (cleanCode === 'VIPMENSAL3030') {
-          alert("🎉 VIP Mensal ativado por 30 DIAS!");
-        } else if (cleanCode === 'VIPANUAL365DIAS10') {
-          alert("🎉 VIP Anual ativado por 365 DIAS!");
-        }
 
         updateVipUI();
         renderStats();
         renderStatSelectOptions();
         renderTasks();
+
+        await saveData();
+        playSound('levelup');
+        alert("🎉 VIP Ativado e salvo no seu perfil!");
       } else {
         alert("❌ Código inválido!");
       }
@@ -1054,11 +467,10 @@
     function updateVipUI() {
       const vipBtn = document.getElementById('vipStatusBtn');
       const vipBanner = document.getElementById('vipBanner');
-
       if (appData.isVip) {
         vipBtn.classList.add('active');
+        vipBtn.innerText = '👑 VIP ATIVO';
         vipBanner.style.display = 'none';
-        checkVipTimer();
       } else {
         vipBtn.innerText = '🔑 VIP';
         vipBtn.classList.remove('active');
@@ -1067,34 +479,12 @@
     }
 
     async function loadData() {
-      let dataLoaded = false;
       if (currentUser && supabaseClient) {
         try {
-          const { data, error } = await supabaseClient.from('user_data').select('appData').eq('id', currentUser.id).maybeSingle();
-          if (data && data.appData) {
-            appData = data.appData;
-            dataLoaded = true;
-          }
-        } catch(e) {
-          console.error("Erro ao carregar dados do banco:", e);
-        }
+          const { data } = await supabaseClient.from('user_data').select('appData').eq('id', currentUser.id).maybeSingle();
+          if (data && data.appData) appData = data.appData;
+        } catch(e){}
       }
-
-      if (!dataLoaded) {
-        const saved = localStorage.getItem('lifeRpgData');
-        if (saved) {
-          appData = JSON.parse(saved);
-        }
-      }
-
-      if (!appData.goalMoney) appData.goalMoney = 30000;
-
-      const savedSound = localStorage.getItem('lifeRpgSound');
-      if (savedSound !== null) {
-        soundEnabled = JSON.parse(savedSound);
-        document.getElementById('soundBtn').innerText = soundEnabled ? '🔊' : '🔇';
-      }
-
       checkDailyReset();
       updateVipUI();
       renderStats();
@@ -1105,43 +495,27 @@
 
     async function saveData() {
       localStorage.setItem('lifeRpgData', JSON.stringify(appData));
-      
       if (currentUser && supabaseClient) {
         try {
-          const { error } = await supabaseClient.from('user_data').upsert({ id: currentUser.id, appData: appData, updated_at: new Date().toISOString() });
-          if (error) {
-            console.error("Erro ao salvar no Supabase:", error.message);
-          }
-        } catch (err) {
-          console.error("Exceção ao salvar no Supabase:", err);
-        }
+          await supabaseClient.from('user_data').upsert({ id: currentUser.id, appData: appData, updated_at: new Date().toISOString() });
+        } catch (err) {}
       }
     }
 
-    function getXpForNextLevel(level) {
-      return level * 100;
-    }
+    function getXpForNextLevel(level) { return level * 100; }
 
     function renderStats() {
       const container = document.getElementById('statsContainer');
       container.innerHTML = '';
-
       const statKeys = Object.keys(appData.stats);
       const limitText = document.getElementById('statLimitText');
       const addBtn = document.getElementById('addStatBtn');
 
       if (!appData.isVip) {
         limitText.innerText = `(${statKeys.length}/${FREE_STAT_LIMIT} Grátis)`;
-        if (statKeys.length >= FREE_STAT_LIMIT) {
-          addBtn.innerText = "🔒 Limite";
-          addBtn.disabled = true;
-        } else {
-          addBtn.innerText = "+ Atributo";
-          addBtn.disabled = false;
-        }
+        addBtn.disabled = statKeys.length >= FREE_STAT_LIMIT;
       } else {
         limitText.innerText = `(Ilimitado 👑)`;
-        addBtn.innerText = "+ Atributo";
         addBtn.disabled = false;
       }
 
@@ -1155,7 +529,7 @@
             <div class="stat-header">
               <div class="stat-title-group">
                 <span>${stat.name} (Nível ${stat.level})</span>
-                <button class="btn-trash" onclick="openDeleteModal('${key}')" title="Excluir atributo">🗑️</button>
+                <button class="btn-trash" onclick="openDeleteModal('${key}')">🗑️</button>
               </div>
               <span>${stat.xp} / ${nextXp} XP</span>
             </div>
@@ -1169,32 +543,24 @@
 
     function openDeleteModal(key) {
       statKeyToDelete = key;
-      const stat = appData.stats[key];
-      if (!stat) return;
-
-      document.getElementById('deleteStatNameTarget').innerText = `"${stat.name}"`;
+      document.getElementById('deleteStatNameTarget').innerText = `"${appData.stats[key].name}"`;
       document.getElementById('deleteConfirmInput').value = '';
       document.getElementById('confirmDeleteStatBtn').disabled = true;
       document.getElementById('deleteStatModal').style.display = 'flex';
     }
 
     function closeDeleteModal() {
-      statKeyToDelete = null;
       document.getElementById('deleteStatModal').style.display = 'none';
     }
 
     function validateDeleteInput() {
-      const inputVal = document.getElementById('deleteConfirmInput').value.trim();
-      const btn = document.getElementById('confirmDeleteStatBtn');
-      btn.disabled = (inputVal !== 'DELETE');
+      document.getElementById('confirmDeleteStatBtn').disabled = (document.getElementById('deleteConfirmInput').value.trim() !== 'DELETE');
     }
 
     async function executeDeleteStat() {
-      if (!statKeyToDelete || !appData.stats[statKeyToDelete]) return;
-
+      if (!statKeyToDelete) return;
       delete appData.stats[statKeyToDelete];
       appData.tasks = appData.tasks.filter(t => t.stat !== statKeyToDelete);
-
       await saveData();
       closeDeleteModal();
       renderStats();
@@ -1211,31 +577,13 @@
     }
 
     async function addNewStat() {
-      const currentStatsCount = Object.keys(appData.stats).length;
-
-      if (!appData.isVip && currentStatsCount >= FREE_STAT_LIMIT) {
-        alert("🔒 Limite de 3 atributos atingido no plano Grátis!");
-        promptVipCode();
-        return;
-      }
-
       const nameInput = document.getElementById('newStatName');
-      const colorInput = document.getElementById('newStatColor');
-
       const name = nameInput.value.trim();
-      const color = colorInput.value;
-
       if (!name) return;
-
       const key = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_');
 
       if (!appData.stats[key]) {
-        appData.stats[key] = {
-          name: name,
-          level: 1,
-          xp: 0,
-          color: color
-        };
+        appData.stats[key] = { name: name, level: 1, xp: 0, color: document.getElementById('newStatColor').value };
         nameInput.value = '';
         await saveData();
         renderStats();
@@ -1246,22 +594,14 @@
     function renderTasks() {
       const container = document.getElementById('tasksContainer');
       container.innerHTML = '';
-
       const limitText = document.getElementById('taskLimitText');
       const addBtn = document.getElementById('addTaskBtn');
 
       if (!appData.isVip) {
         limitText.innerText = `(${appData.tasks.length}/${FREE_TASK_LIMIT} Grátis)`;
-        if (appData.tasks.length >= FREE_TASK_LIMIT) {
-          addBtn.innerText = "🔒 Limite";
-          addBtn.disabled = true;
-        } else {
-          addBtn.innerText = "+ Criar";
-          addBtn.disabled = false;
-        }
+        addBtn.disabled = appData.tasks.length >= FREE_TASK_LIMIT;
       } else {
         limitText.innerText = `(Ilimitado 👑)`;
-        addBtn.innerText = "+ Criar";
         addBtn.disabled = false;
       }
 
@@ -1283,31 +623,17 @@
     }
 
     async function addNewTask() {
-      if (!appData.isVip && appData.tasks.length >= FREE_TASK_LIMIT) {
-        alert("🔒 Limite de 5 tarefas atingido no plano Grátis!");
-        promptVipCode();
-        return;
-      }
-
       const titleInput = document.getElementById('newTaskTitle');
-      const statSelect = document.getElementById('newTaskStat');
-      const xpInput = document.getElementById('newTaskXp');
-
       const title = titleInput.value.trim();
-      const stat = statSelect.value;
-      const xpReward = parseInt(xpInput.value) || 20;
+      if (!title) return;
 
-      if (!title || !stat) return;
-
-      const newTask = {
+      appData.tasks.push({
         id: Date.now(),
         title: title,
-        stat: stat,
-        xpReward: xpReward,
+        stat: document.getElementById('newTaskStat').value,
+        xpReward: parseInt(document.getElementById('newTaskXp').value) || 20,
         completed: false
-      };
-
-      appData.tasks.push(newTask);
+      });
       titleInput.value = '';
       await saveData();
       renderTasks();
@@ -1322,10 +648,8 @@
     async function toggleTask(id) {
       const task = appData.tasks.find(t => t.id === id);
       if (!task) return;
-
       task.completed = !task.completed;
       const stat = appData.stats[task.stat];
-      let leveledUp = false;
 
       if (stat) {
         if (task.completed) {
@@ -1333,19 +657,12 @@
           while (stat.xp >= getXpForNextLevel(stat.level)) {
             stat.xp -= getXpForNextLevel(stat.level);
             stat.level++;
-            leveledUp = true;
           }
-          if (leveledUp) {
-            playSound('levelup');
-          } else {
-            playSound('check');
-          }
+          playSound('check');
         } else {
-          stat.xp -= task.xpReward;
-          if (stat.xp < 0) stat.xp = 0;
+          stat.xp = Math.max(0, stat.xp - task.xpReward);
         }
       }
-
       await saveData();
       renderStats();
       renderTasks();
@@ -1361,31 +678,21 @@
       document.getElementById('financePercent').innerText = `${percent.toFixed(1)}%`;
 
       const circle = document.getElementById('financeCircle');
-      const offset = CIRCLE_CIRCUMFERENCE - (percent / 100) * CIRCLE_CIRCUMFERENCE;
-      circle.style.strokeDashoffset = offset;
+      circle.style.strokeDashoffset = CIRCLE_CIRCUMFERENCE - (percent / 100) * CIRCLE_CIRCUMFERENCE;
     }
 
     async function changeGoalAmount() {
-      const currentGoal = appData.goalMoney || 30000;
-      const newGoalStr = prompt("Digite o novo valor da sua Meta Financeira (R$):", currentGoal);
-
-      if (!newGoalStr) return;
-
-      const newGoal = parseFloat(newGoalStr.replace(/[^0-9.]/g, ''));
-
+      const newGoal = parseFloat(prompt("Novo valor da Meta (R$):", appData.goalMoney));
       if (!isNaN(newGoal) && newGoal > 0) {
         appData.goalMoney = newGoal;
         await saveData();
         renderFinance();
-      } else {
-        alert("Por favor, digite um valor numérico válido.");
       }
     }
 
     async function addFunds() {
       const input = document.getElementById('depositInput');
       const val = parseFloat(input.value);
-
       if (!isNaN(val) && val > 0) {
         appData.savedMoney += val;
         input.value = '';
@@ -1398,12 +705,7 @@
     async function withdrawFunds() {
       const input = document.getElementById('depositInput');
       const val = parseFloat(input.value);
-
-      if (!isNaN(val) && val > 0) {
-        if (appData.savedMoney - val < 0) {
-          alert("O valor de retirada não pode ser maior do que o montante guardado.");
-          return;
-        }
+      if (!isNaN(val) && val > 0 && appData.savedMoney >= val) {
         appData.savedMoney -= val;
         input.value = '';
         playSound('money');
